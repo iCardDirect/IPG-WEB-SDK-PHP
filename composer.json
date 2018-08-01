@@ -1,5 +1,6 @@
 {
   "name": "icarddirect/ipg-sdk-php",
+  "version": "1.0.0",
   "type": "library",
   "license": "MIT",
   "description": "IPG SDK PHP",
