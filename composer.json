@@ -1,15 +1,19 @@
 {
   "name": "icarddirect/ipg-sdk-php",
   "type": "library",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "license": "MIT",
   "description": "IPG SDK PHP",
   "require": {
-    "php": ">=5.4.8"
+    "php": ">=5.4.8",
+    "ext-openssl": "*"
   },
   "autoload": {
     "psr-4": {
       "IPG\\": "IPG/"
     }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.6"
   }
 }

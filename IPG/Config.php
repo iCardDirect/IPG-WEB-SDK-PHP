@@ -9,7 +9,7 @@ class Config
 	 * Version of IPG that is used
 	 * @var string 
 	 */
-	private $version = '3.2';
+	private $version = '4.2';
 
 	/**
 	 * by default EN. ISO 2-character code for the desired language on the payment page. 
@@ -43,10 +43,16 @@ class Config
 	private $keyIndex = 1;
 
 	/**
+	 * Identifier of the acquirer private key used for signature
+	 * @var int
+	 */
+	private $keyIndexResp = 1;
+
+	/**
 	 * Requests will be send to this url.
 	 * @var string
 	 */
-	private $ipgURL = 'https://devs.icards.eu/ipgtest';
+	private $ipgURL = 'https://dev-ipg.icards.eu/sandbox';
 
 	/**
 	 * API public key
@@ -173,6 +179,7 @@ class Config
 
 	/**
 	 * Set identifier of the private key used for signature
+     *
 	 * @param int $keyIndex
 	 * @return Config
 	 */
@@ -192,6 +199,29 @@ class Config
 	{
 		return $this->keyIndex;
 	}
+
+    /**
+     * Set identifier of the acquirer private key used for signature
+     *
+     * @param int $keyIndexResp
+     * @return Config
+     */
+    public function setKeyIndexResp($keyIndexResp)
+    {
+        $this->keyIndexResp = $keyIndexResp;
+
+        return $this;
+    }
+
+    /**
+     * Identifier of the acquirer private key used for signature
+     *
+     * @return int
+     */
+    public function getKeyIndexResp()
+    {
+        return $this->keyIndexResp;
+    }
 
 	/**
 	 * Set IPG Request URL
@@ -299,13 +329,17 @@ class Config
 	/**
 	 * Validate all set config details
 	 *
+     * @param bool $hasVirtualTerminalId
 	 * @return boolean
 	 * @throws IPG_Exception
 	 */
-	public function validate()
+	public function validate($hasVirtualTerminalId = true)
 	{
 		if ( empty( $this->getKeyIndex() ) || !is_numeric( $this->getKeyIndex() ) ) {
 			throw new IPG_Exception( 'Invalid Key Index' );
+		}
+		if ( empty( $this->getKeyIndexResp() ) || !is_numeric( $this->getKeyIndexResp() ) ) {
+			throw new IPG_Exception( 'Invalid Key Index Resp' );
 		}
 		if ( empty( $this->getIPGUrl() ) || !Helper::isValidURL( $this->getIPGUrl() ) ) {
 			throw new IPG_Exception( 'Invalid IPC URL' );
@@ -316,7 +350,7 @@ class Config
 		if ( $this->getVersion() == null ) {
 			throw new IPG_Exception( 'Invalid IPG Version' );
 		}
-		if ( empty( $this->getVirtualTerminalId() ) ) {
+		if ( $hasVirtualTerminalId && empty( $this->getVirtualTerminalId() ) ) {
 			throw new IPG_Exception( 'Invalid Virtual Terminal ID' );
 		}
 		if ( !openssl_get_privatekey( $this->getPrivateKey() ) ) {

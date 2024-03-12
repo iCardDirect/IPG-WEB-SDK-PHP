@@ -11,11 +11,23 @@ class Customer
 	 */
 	private $email;
 
+    /**
+     * Customer identifier
+     * @var string
+     */
+    private $identifier;
+
 	/**
 	 * Customer IP Address
 	 * @var string 
 	 */
 	private $ip;
+
+    /**
+     * Customer mobile number. Used for 3DS authentication
+     * @var string
+     */
+    private $mobileNumber;
 
 	/**
 	 * Set Customer email
@@ -45,6 +57,29 @@ class Customer
 		return $this->email;
 	}
 
+    /**
+     * Set customer identifier
+     *
+     * @param string $identifier
+     * @return Customer
+     */
+    public function setIdentifier($identifier)
+    {
+        $this->identifier = $identifier;
+
+        return $this;
+    }
+
+    /**
+     * Customer identifier
+     *
+     * @return string
+     */
+    public function getIdentifier()
+    {
+        return $this->identifier;
+    }
+
 	/**
 	 * Set customer IP address
 	 * 
@@ -73,4 +108,22 @@ class Customer
 		return $this->ip;
 	}
 
+    /**
+     * @param string $mobileNumber
+     * @return Customer
+     */
+    public function setMobileNumber($mobileNumber)
+    {
+        $this->mobileNumber = $mobileNumber;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMobileNumber()
+    {
+        return $this->mobileNumber;
+    }
 }

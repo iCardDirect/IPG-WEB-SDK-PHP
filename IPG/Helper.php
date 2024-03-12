@@ -66,8 +66,8 @@ class Helper
 	public static function isValidOutputFormat($outputFormat)
 	{
 		return in_array( $outputFormat, [
-			Defines::COMMUNICATION_FORMAT_XML,
-			Defines::COMMUNICATION_FORMAT_JSON,
+			Defines::OUTPUT_FORMAT_XML,
+			Defines::OUTPUT_FORMAT_JSON,
 				] );
 	}
 

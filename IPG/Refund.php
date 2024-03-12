@@ -26,7 +26,19 @@ class Refund extends Base
 	 */
 	private $amount;
 
-	public function __construct(Config $config)
+    /**
+     * Unique order id
+     *
+     * @var string
+     */
+    private $orderId;
+
+    /**
+     * @var Customer
+     */
+    private $customer;
+
+    public function __construct(Config $config)
 	{
 		$this->_setConfig( $config );
 	}
@@ -103,6 +115,42 @@ class Refund extends Base
 		return $this->amount;
 	}
 
+    /**
+     * @return string
+     */
+    public function getOrderId()
+    {
+        return $this->orderId;
+    }
+
+    /**
+     * @param string $orderId
+     * @return Refund
+     */
+    public function setOrderId($orderId)
+    {
+        $this->orderId = $orderId;
+        return $this;
+    }
+
+    /**
+     * @return Customer
+     */
+    public function getCustomer()
+    {
+        return $this->customer;
+    }
+
+    /**
+     * @param Customer $customer
+     * @return Refund
+     */
+    public function setCustomer($customer)
+    {
+        $this->customer = $customer;
+        return $this;
+    }
+
 	/**
 	 * Process IPG Refund
 	 */
@@ -113,10 +161,13 @@ class Refund extends Base
 		$this->_addPostParam( 'IPGmethod', 'IPGRefund' );
 		$this->_addPostParam( 'Originator', $this->getConfig()->getMerchantId() );
 		$this->_addPostParam( 'KeyIndex', $this->getConfig()->getKeyIndex() );
+        $this->_addPostParam( 'KeyIndexResp', $this->getConfig()->getKeyIndexResp() );
 		$this->_addPostParam( 'IPGVersion', $this->getConfig()->getVersion() );
 		$this->_addPostParam( 'Language', $this->getConfig()->getLanguage() );
-
 		$this->_addPostParam( 'MID', $this->getConfig()->getVirtualTerminalId() );
+
+		$this->_addPostParam( 'OrderID', $this->getOrderId() );
+		$this->_addPostParam( 'Email', $this->getCustomer()->getEmail() );
 		$this->_addPostParam( 'IPG_Trnref', $this->getTrnRef() );
 		$this->_addPostParam( 'Amount', $this->getAmount() );
 		$this->_addPostParam( 'Currency', $this->getCurrency() );

@@ -101,18 +101,22 @@ class Response
 		$signature = $this->data['signature'];
 		unset( $this->data['signature'] );
 
-		$concData = urlencode( stripslashes( implode( '', $this->data ) ) );
 		$pubKeyId = openssl_get_publickey( $this->config->getAPIPublicKey() );
 		$signature = base64_decode( $signature );
 
-		$res = openssl_verify( sha1( $concData ), $signature, $this->config->getAPIPublicKey() );
+        if ($this->config->getVersion() < Defines::NEW_SIGNATURE_VERSION) {
+            $concData = urlencode( stripslashes( implode( '', $this->data ) ) );
+
+            $res = openssl_verify( sha1( $concData ), $signature, $pubKeyId );
+		} else {
+            $concData = base64_encode( implode( '', $this->data ) );
+
+            $res = openssl_verify( $concData, $signature, $pubKeyId, OPENSSL_ALGO_SHA256 );
+        }
+
 		openssl_free_key( $pubKeyId );
 
-		if ( $res == 1 ) {
-			return true;
-		}
-
-		return false;
+        return $res == 1;
 	}
 
 }

@@ -49,6 +49,7 @@ class Reversal extends Base
 		$this->_addPostParam( 'IPGmethod', 'IPGReversal' );
 		$this->_addPostParam( 'Originator', $this->getConfig()->getMerchantId() );
 		$this->_addPostParam( 'KeyIndex', $this->getConfig()->getKeyIndex() );
+        $this->_addPostParam( 'KeyIndexResp', $this->getConfig()->getKeyIndexResp() );
 		$this->_addPostParam( 'IPGVersion', $this->getConfig()->getVersion() );
 		$this->_addPostParam( 'Language', $this->getConfig()->getLanguage() );
 
@@ -71,7 +72,7 @@ class Reversal extends Base
 		}
 
 		try {
-			$this->getConfig()->validate();
+			$this->getConfig()->validate(false);
 		}
 		catch ( \Exception $ex ) {
 			throw new IPG_Exception( 'Invalid Config details: ' . $ex->getMessage() );

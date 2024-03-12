@@ -18,12 +18,13 @@ require __DIR__ . '/vendor/autoload.php';
 
 ```php
 $config = new \IPG\Config();
-$config->setIPGUrl( 'https://devs.icards.eu/ipgtest/' );
+$config->setIPGUrl( 'https://dev-ipg.icards.eu/sandbox/' );
 $config->setKeyIndex( 1 );
+$config->setKeyIndexResp( 1 );
 $config->setLanguage( 'en' );
 $config->setMerchantId( 33 );
 $config->setMerchantName( 'IPG Example' );
-$config->setVersion( '3.2' );
+$config->setVersion( '4.2' );
 $config->setVirtualTerminalId( '112' );
 $config->setAPIPublicKey( '-----BEGIN PUBLIC KEY-----
 MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4ur+fZBqNjnm1XJSJrzf8vyIv
@@ -64,7 +65,22 @@ $cart->add( 'Third item', 3, 3.00 );
 ```php
 $customer = new \IPG\Customer();
 $customer->setEmail( 'customer@email.com' );
+$customer->setIdentifier('Customer_Identifier');
+$customer->setMobileNumber('+359888123456');
 $customer->setIP( '127.0.0.1' );
+```
+
+### Build Billing address Object
+
+```php
+$billingAddress = new \IPG\BillingAddress();
+$billingAddress->setBillAddrCountry( 100 );
+$billingAddress->setBillAddrState('State if applicable');
+$billingAddress->setBillAddrPostCode('PostCode');
+$billingAddress->setBillAddrCity( 'City' );
+$billingAddress->setBillAddrLine1( 'Line1' );
+$billingAddress->setBillAddrLine2( 'Line2' );
+$billingAddress->setBillAddrLine3( 'Line3' );
 ```
 
 ### Process Purchase
@@ -74,14 +90,57 @@ $purchase = new IPG\Purchase( $config );
 $purchase->setCart( $cart );
 $purchase->setCurrency( '978' );
 $purchase->setCustomer( $customer );
+$purchase->setBillingAddress( $billingAddress );
 $purchase->setOrderId( time() );
 $purchase->setUrlOK( 'http://yoursite.com//urlOK' );
 $purchase->setUrlNotify( 'http://yoursite.com//urlNotify' );
 $purchase->setUrlCancel( 'http://yoursite.com//urlCancel' );
 try {
 	$purchase->process();
+} catch ( \IPG\IPG_Exception $exc ) {
+	echo $exc->getMessage();
 }
-catch ( \IPG\IPG_Exception $exc ) {
+```
+
+### Process Reversal
+
+```php
+$reversal = new IPG\Reversal( $config );
+$reversal->setTrnRef('20240312133000327200');
+$reversal->setOutputFormat(\IPG\Defines::OUTPUT_FORMAT_JSON);
+try {
+	$response = $reversal->process();
+} catch ( \IPG\IPG_Exception $exc ) {
+	echo $exc->getMessage();
+}
+```
+
+### Process Refund
+
+```php
+$refund = new IPG\Refund( $config );
+$refund->setCustomer( $customer );
+$refund->setOrderId( time() );
+$refund->setAmount(1.00);
+$refund->setCurrency(978);
+$refund->setTrnRef('20240312133000327200');
+$refund->setOutputFormat(\IPG\Defines::OUTPUT_FORMAT_JSON);
+try {
+	$response = $refund->process();
+} catch ( \IPG\IPG_Exception $exc ) {
+	echo $exc->getMessage();
+}
+```
+
+### Process GetTxnStatus
+
+```php
+$txnStatus = new IPG\TxnStatus( $config );
+$txnStatus->setOrderId('OrderID of previous transaction');
+$txnStatus->setOutputFormat(\IPG\Defines::OUTPUT_FORMAT_JSON);
+try {
+	$response = $txnStatus->process();
+} catch ( \IPG\IPG_Exception $exc ) {
 	echo $exc->getMessage();
 }
 ```

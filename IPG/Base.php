@@ -107,15 +107,24 @@ class Base
 	 */
 	private function _generateSignature()
 	{
-		// Concatenate all values from post and url encode them
-		$concData = urlencode( stripslashes( implode( '', $this->params ) ) );
+        $privKey = openssl_get_privatekey( $this->getConfig()->getPrivateKey() );
 
-		$dataHash = sha1( $concData ); // Create sha1 hash of concatenated data
-		$privKey = openssl_get_privatekey( $this->getConfig()->getPrivateKey() );
-		openssl_sign( $dataHash, $signature, $privKey ); # Signed data in binary
-		$signature = base64_encode( $signature ); # Base64 encoding of the signature
-		
-		return $signature; # Now you need to add the signature to the post request
+        if ($this->getConfig()->getVersion() < Defines::NEW_SIGNATURE_VERSION) {
+            // Concatenate all values from post and url encode them
+            $concData = urlencode( stripslashes( implode( '', $this->params ) ) );
+
+            $dataHash = sha1( $concData ); // Create sha1 hash of concatenated data
+            openssl_sign( $dataHash, $signature, $privKey ); # Signed data in binary
+        } else {
+            // Concatenate all values from post and create base64 encode them
+            $concData = base64_encode( implode( '', $this->params ) );
+
+            openssl_sign( $concData, $signature, $privKey, OPENSSL_ALGO_SHA256 ); # Signed data in binary with SHA256 algo
+        }
+
+        $signature = base64_encode( $signature ); # Base64 encoding of the signature
+
+        return $signature; # Now you need to add the signature to the post request
 	}
 
 	/**
@@ -141,7 +150,7 @@ class Base
 		$postData = http_build_query( $this->params );
 		$fp = @fsockopen( $ssl . $url['host'], $url['port'], $errno, $errstr, 10 );
 		if ( !$fp ) {
-			throw new IPG_Exception( 'Error connecting IPC URL' );
+			throw new IPG_Exception( 'Error connecting IPG URL' );
 		}
 		else {
 			$eol = "\r\n";

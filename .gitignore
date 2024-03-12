@@ -1,0 +1,6 @@
+###> IPG SDK ###
+/vendor/
+###< IPG SDK ###
+
+# IDEs and editors
+/.idea

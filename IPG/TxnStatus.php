@@ -50,10 +50,11 @@ class TxnStatus extends Base
 		$this->_addPostParam( 'IPGmethod', 'IPGGetTxnStatus' );
 		$this->_addPostParam( 'Originator', $this->getConfig()->getMerchantId() );
 		$this->_addPostParam( 'KeyIndex', $this->getConfig()->getKeyIndex() );
+        $this->_addPostParam( 'KeyIndexResp', $this->getConfig()->getKeyIndexResp() );
 		$this->_addPostParam( 'IPGVersion', $this->getConfig()->getVersion() );
 		$this->_addPostParam( 'Language', $this->getConfig()->getLanguage() );
-
 		$this->_addPostParam( 'MID', $this->getConfig()->getVirtualTerminalId() );
+
 		$this->_addPostParam( 'OrderID', $this->getOrderId() );
 		$this->_addPostParam( 'OutputFormat', $this->getOutputFormat() );
 		

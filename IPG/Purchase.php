@@ -29,7 +29,12 @@ class Purchase extends Base
 	 */
 	private $customer;
 
-	/**
+    /**
+     * @var BillingAddress
+     */
+    private $billingAddress;
+
+    /**
 	 * Back-End notify url. POST Request will be send.
 	 * 
 	 * @var string 
@@ -241,7 +246,26 @@ class Purchase extends Base
 		return $this->customer;
 	}
 
-	/**
+    /**
+     * @return BillingAddress
+     */
+    public function getBillingAddress()
+    {
+        return $this->billingAddress;
+    }
+
+    /**
+     * @param BillingAddress $billingAddress
+     * @return Purchase
+     */
+    public function setBillingAddress($billingAddress)
+    {
+        $this->billingAddress = $billingAddress;
+
+        return $this;
+    }
+
+    /**
 	 * The link of the page with the order from the merchant web shop.
 	 * 
 	 * @param string $orderLink
@@ -323,17 +347,25 @@ class Purchase extends Base
 		$this->_addPostParam( 'IPGmethod', 'IPGPurchase' );
 		$this->_addPostParam( 'Originator', $this->getConfig()->getMerchantId() );
 		$this->_addPostParam( 'KeyIndex', $this->getConfig()->getKeyIndex() );
+        $this->_addPostParam( 'KeyIndexResp', $this->getConfig()->getKeyIndexResp() );
 		$this->_addPostParam( 'IPGVersion', $this->getConfig()->getVersion() );
 		$this->_addPostParam( 'Language', $this->getConfig()->getLanguage() );
-
 		$this->_addPostParam( 'MID', $this->getConfig()->getVirtualTerminalId() );
 		$this->_addPostParam( 'MIDName', $this->getConfig()->getMerchantName() );
+
 		$this->_addPostParam( 'OrderID', $this->getOrderId() );
 		$this->_addPostParam( 'BannerIndex', $this->getBannerIndex() );
 		$this->_addPostParam( 'Currency', $this->getCurrency() );
 		$this->_addPostParam( 'CustomerIP', $this->customer->getIP() );
 		$this->_addPostParam( 'Email', $this->customer->getEmail() );
-		if ( !empty( $this->getOrderLink() ) ) {
+        if ( !empty( $this->customer->getIdentifier() ) ) {
+            $this->_addPostParam( 'CustomerIdentifier', $this->customer->getIdentifier() );
+        }
+        if ( !empty( $this->customer->getMobileNumber() ) ) {
+            $this->_addPostParam( 'MobileNumber', $this->customer->getMobileNumber() );
+        }
+
+        if ( !empty( $this->getOrderLink() ) ) {
 			$this->_addPostParam( 'OrderLink', $this->getOrderLink() );
 		}
 		if ( !empty( $this->getNote() ) ) {
@@ -344,7 +376,26 @@ class Purchase extends Base
 		$this->_addPostParam( 'URL_Cancel', $this->getUrlCancel() );
 		$this->_addPostParam( 'URL_Notify', $this->getUrlNotify() );
 
-		$this->_addPostParam( 'CartItems', $this->getCart()->getTotalItemsCount() );
+        if ( !empty( $this->billingAddress ) ) {
+            $this->_addPostParam( 'BillAddrCountry', $this->billingAddress->getBillAddrCountry() );
+            $this->_addPostParam( 'BillAddrPostCode', $this->billingAddress->getBillAddrPostCode() );
+            $this->_addPostParam( 'BillAddrCity', $this->billingAddress->getBillAddrCity() );
+            $this->_addPostParam( 'BillAddrLine1', $this->billingAddress->getBillAddrLine1() );
+
+            if ( !empty($this->billingAddress->getBillAddrState() ) ) {
+                $this->_addPostParam( 'BillAddrState', $this->billingAddress->getBillAddrState() );
+            }
+
+            if ( !empty($this->billingAddress->getBillAddrLine2() ) ) {
+                $this->_addPostParam( 'BillAddrLine2', $this->billingAddress->getBillAddrLine2() );
+            }
+
+            if ( !empty($this->billingAddress->getBillAddrLine3() ) ) {
+                $this->_addPostParam( 'BillAddrLine3', $this->billingAddress->getBillAddrLine3() );
+            }
+        }
+
+        $this->_addPostParam( 'CartItems', $this->getCart()->getTotalItemsCount() );
 		$cartItemLoopIndex = 0;
 		$totalCartAmount = 0;
 
