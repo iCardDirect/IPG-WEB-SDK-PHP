@@ -18,7 +18,13 @@ class Response
 		$this->_parseData( $rawData, $format );
 	}
 
-	private function _parseData($rawData, $format)
+    /**
+     * @param $rawData
+     * @param $format
+     * @return $this
+     * @throws IPG_Exception
+     */
+    private function _parseData($rawData, $format)
 	{
 		if ( empty( $rawData ) ) {
 			throw new IPG_Exception( 'Missing response data' );
@@ -27,12 +33,19 @@ class Response
 		switch ( $format ) {
 			case Defines::OUTPUT_FORMAT_JSON:
 				$this->data = json_decode( $rawData, true );
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    throw new IPG_Exception('Invalid JSON response format. Error message: ' . json_last_error_msg());
+                }
 				break;
 			case Defines::OUTPUT_FORMAT_XML:
-				$this->data = ( array ) new \SimpleXMLElement( $rawData );
-				if ( isset( $this->data['@attributes'] ) ) {
-					unset( $this->data['@attributes'] );
-				}
+                try {
+                    $this->data = ( array ) new \SimpleXMLElement( $rawData );
+                    if ( isset( $this->data['@attributes'] ) ) {
+                        unset( $this->data['@attributes'] );
+                    }
+                } catch (\Exception $exception) {
+                    throw new IPG_Exception('Invalid XML response format. Error message: ' . $exception->getMessage());
+                }
 				break;
 			case Defines::OUTPUT_FORMAT_POST:
 				$this->data = $rawData;

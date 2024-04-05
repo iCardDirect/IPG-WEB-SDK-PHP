@@ -2,6 +2,9 @@
 
 namespace IPG;
 
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
+
 class Base
 {
 
@@ -136,45 +139,21 @@ class Base
 	protected function _processPost()
 	{
 		$this->params['Signature'] = $this->_generateSignature();
-		$url = parse_url( $this->getConfig()->getIPGUrl() );
-		$ssl = "";
-		if ( !isset( $url['port'] ) ) {
-			if ( $url['scheme'] == 'https' ) {
-				$url['port'] = 443;
-				$ssl = "ssl://";
-			}
-			else {
-				$url['port'] = 80;
-			}
-		}
-		$postData = http_build_query( $this->params );
-		$fp = @fsockopen( $ssl . $url['host'], $url['port'], $errno, $errstr, 10 );
-		if ( !$fp ) {
-			throw new IPG_Exception( 'Error connecting IPG URL' );
-		}
-		else {
-			$eol = "\r\n";
-			$path = $url['path'] . (!(empty( $url['query'] )) ? ('?' . $url['query']) : '');
-			fputs( $fp, "POST " . $path . " HTTP/1.1" . $eol );
-			fputs( $fp, "Host: " . $url['host'] . $eol );
-			fputs( $fp, "Content-type: application/x-www-form-urlencoded" . $eol );
-			fputs( $fp, "Content-length: " . strlen( $postData ) . $eol );
-			fputs( $fp, "Connection: close" . $eol . $eol );
-			fputs( $fp, $postData . $eol . $eol );
-			$result = '';
-			while ( !feof( $fp ) ) {
-				$result .= @fgets( $fp, 1024 );
-			}
-			fclose( $fp );
-			$result = explode( $eol . $eol, $result, 2 );
-			$cont = isset( $result[1] ) ? $result[1] : '';
-			
-			if ( $cont ) {
-				$cont = trim( $cont );
-			}
-			
-			return new Response($this->getConfig(), $cont, $this->getOutputFormat());
-		}
+
+        $client = new Client();
+        try {
+            $response = $client->request(
+                'POST',
+                $this->getConfig()->getIPGUrl(),
+                [
+                    'form_params' => $this->params
+                ]
+            );
+
+            return new Response($this->getConfig(), $response->getBody()->getContents(), $this->getOutputFormat());
+        } catch (GuzzleException $ex) {
+            throw new IPG_Exception( 'Error sending request to iCard IPG. Error message: ' . $ex->getMessage() );
+        }
 	}
 
 }
