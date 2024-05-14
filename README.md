@@ -17,22 +17,8 @@ require __DIR__ . '/vendor/autoload.php';
 ### Set up configuration data:
 
 ```php
-$config = new \IPG\Config();
-$config->setIPGUrl( 'https://dev-ipg.icards.eu/sandbox/' );
-$config->setKeyIndex( 1 );
-$config->setKeyIndexResp( 1 );
-$config->setLanguage( 'en' );
-$config->setMerchantId( 33 );
-$config->setMerchantName( 'IPG Example' );
-$config->setVersion( '4.2' );
-$config->setVirtualTerminalId( '112' );
-$config->setAPIPublicKey( '-----BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4ur+fZBqNjnm1XJSJrzf8vyIv
-xfXew44RKJv9kpPiSEtGaRiAmqZhMWsW/fD2Drnh1A6gCgfWIv/3Zgr18GZ/Heqm
-h5n9HmQndHAB2nZnFLOioL9v6awAbqVeqYBMzp97UkruxXDtqejL7w8WkxearqpU
-BBbcPHA2gMp0hRN/MwIDAQAB
------END PUBLIC KEY-----' );
-$config->setPrivateKey( '-----BEGIN RSA PRIVATE KEY-----
+$privKey = <<<EOT
+-----BEGIN RSA PRIVATE KEY-----
 MIICXgIBAAKBgQC+NIHevraPmAvx5//z38qjcqlCeyiLwXI5CRNZoL+Ms+/itElM
 ITVpaILCBF5+Uwp+A0pPYy/Gn9S+1gz/LL/mBDbWpTuMhHvEgJilX6CsVIah9/c/
 Bn8U3gT724aBhyIJeKVLO54pILKlkrKId4w76KDaouaFxyCECBMLaXQZoQIDAQAB
@@ -46,7 +32,29 @@ hKqrqDr1/hWJO1VPC3CfoSX8zW1hPDP/VLrY1U7HTvBvkl+Fd33VUmUI4cr9AkAR
 PBSgKpwFKI7oqwhbMW0JPua8r0FWQbu6lO0txbzwiuMziCBmoYYgK9j7VwyOik6A
 oZBWvHeIpnnSTMkbvkNDAkEAvYoCwTJWAGYUDSSLSN+nP1nmrbyJVSSJMNNQ5974
 bBzRvEz9OIgvFL2LslY3kBdwE5JIFacyvDXBVUVqv7MdlQ==
------END RSA PRIVATE KEY-----' );
+-----END RSA PRIVATE KEY-----
+EOT;
+
+$pubKey = <<<EOT
+-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4ur+fZBqNjnm1XJSJrzf8vyIv
+xfXew44RKJv9kpPiSEtGaRiAmqZhMWsW/fD2Drnh1A6gCgfWIv/3Zgr18GZ/Heqm
+h5n9HmQndHAB2nZnFLOioL9v6awAbqVeqYBMzp97UkruxXDtqejL7w8WkxearqpU
+BBbcPHA2gMp0hRN/MwIDAQAB
+-----END PUBLIC KEY-----
+EOT;
+
+$config = new \IPG\Config();
+$config->setIPGUrl( 'https://dev-ipg.icards.eu/sandbox/' );
+$config->setKeyIndex( 1 );
+$config->setKeyIndexResp( 1 );
+$config->setLanguage( 'en' );
+$config->setMerchantId( 33 );
+$config->setMerchantName( 'IPG Example' );
+$config->setVersion( '4.2' );
+$config->setVirtualTerminalId( '112' );
+$config->setAPIPublicKey( $pubKey );
+$config->setPrivateKey( $privKey );
 ```
 
 Keys can be set by path, using path methods.

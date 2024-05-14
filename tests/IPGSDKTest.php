@@ -2,7 +2,52 @@
 
 class IPGSDKTest extends \PHPUnit\Framework\TestCase
 {
-    /*public function testFirstRecurringResponse()
+    public function testPurchaseResponse()
+    {
+        $config = new \IPG\Config();
+        $config->setIPGUrl( 'https://dev-ipg.icards.eu/sandbox/' );
+        $config->setKeyIndex( 1 );
+        $config->setKeyIndexResp( 1 );
+        $config->setLanguage( 'en' );
+        $config->setMerchantId( 33 );
+        $config->setMerchantName( 'IPG Example' );
+        $config->setVersion( '4.2' );
+        $config->setVirtualTerminalId( '112' );
+        $config->setAPIPublicKeyPath( 'path to public key' );
+        $config->setPrivateKeyPath( 'path to private key' );
+
+        $cart = new \IPG\Cart();
+        $cart->add( 'Item', 1, 1.20 );
+
+        $customer = new \IPG\Customer();
+        $customer->setEmail( 'customer@email.com' );
+        $customer->setIdentifier('Customer_Identifier');
+        $customer->setMobileNumber('+359888123456');
+        $customer->setIP( '127.0.0.1' );
+
+        $billingAddress = new \IPG\BillingAddress();
+        $billingAddress->setBillAddrCountry( 100 );
+        $billingAddress->setBillAddrPostCode('9000');
+        $billingAddress->setBillAddrCity( 'Varna' );
+        $billingAddress->setBillAddrLine1( 'BPV B1' );
+
+        fwrite(STDOUT, __METHOD__ . "\n");
+        $pr = new \IPG\Purchase($config);
+        $pr
+            ->setCart($cart)
+            ->setOrderId('IPG_SDK_' . time())
+            ->setCurrency(978)
+            ->setCustomer($customer)
+            ->setBillingAddress($billingAddress)
+            ->setUrlOK('https://dev-ipg.icards.eu/sandbox/client/ipgOk')
+            ->setUrlCancel('https://dev-ipg.icards.eu/sandbox/client/ipgCancel')
+            ->setUrlNotify('https://dev-ipg.icards.eu/sandbox/client/ipgNotify');
+        $response = $pr->process();
+        fwrite(STDOUT, print_r((array)$response) . "\n");
+        $this->assertTrue(true);
+    }
+
+    public function testFirstRecurringResponse()
     {
         $config = new \IPG\Config();
         $config->setIPGUrl( 'https://dev-ipg.icards.eu/sandbox/' );
@@ -42,9 +87,9 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
         $response = $fr->process();
         fwrite(STDOUT, print_r((array)$response) . "\n");
         $this->assertTrue(true);
-    }*/
+    }
 
-    /*public function testTxnStatus()
+    public function testTxnStatus()
     {
         $config = new \IPG\Config();
         $config->setIPGUrl( 'https://dev-ipg.icards.eu/sandbox/' );
@@ -64,9 +109,9 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
         $response = $txnStatus->process();
         fwrite(STDOUT, print_r($response->getData()) . "\n");
         $this->assertTrue(true);
-    }*/
+    }
 
-    /*public function testSubsequentRecurring()
+    public function testSubsequentRecurring()
     {
         $config = new \IPG\Config();
         $config->setIPGUrl( 'https://dev-ipg.icards.eu/sandbox/' );
@@ -94,9 +139,9 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
         $response = $sr->process();
         fwrite(STDOUT, print_r($response->getData()) . "\n");
         $this->assertTrue(true);
-    }*/
+    }
 
-    /*public function testRefund()
+    public function testRefund()
     {
         $config = new \IPG\Config();
         $config->setIPGUrl( 'https://dev-ipg.icards.eu/sandbox/' );
@@ -123,9 +168,9 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
         $response = $refund->process();
         fwrite(STDOUT, print_r($response->getData()) . "\n");
         $this->assertTrue(true);
-    }*/
+    }
 
-    /*public function testReversal()
+    public function testReversal()
     {
         $config = new \IPG\Config();
         $config->setIPGUrl( 'https://dev-ipg.icards.eu/sandbox/' );
@@ -144,5 +189,5 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
         $response = $reversal->process();
         fwrite(STDOUT, print_r($response->getData()) . "\n");
         $this->assertTrue(true);
-    }*/
+    }
 }
