@@ -120,7 +120,8 @@ class Base
             openssl_sign( $dataHash, $signature, $privKey ); # Signed data in binary
         } else {
             // Concatenate all values from post and create base64 encode them
-            $concData = base64_encode( implode( '', $this->params ) );
+            $signParams = array_map([Helper::class, 'unescape'], $this->params);
+            $concData = base64_encode( implode( '', $signParams ) );
 
             openssl_sign( $concData, $signature, $privKey, OPENSSL_ALGO_SHA256 ); # Signed data in binary with SHA256 algo
         }

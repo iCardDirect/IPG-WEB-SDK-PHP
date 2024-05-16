@@ -13,8 +13,8 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
         $config->setMerchantName( 'IPG Example' );
         $config->setVersion( '4.2' );
         $config->setVirtualTerminalId( '112' );
-        $config->setAPIPublicKeyPath( 'path to public key' );
-        $config->setPrivateKeyPath( 'path to private key' );
+        $config->setAPIPublicKeyPath( __DIR__ . '/data/pub_key' );
+        $config->setPrivateKeyPath( __DIR__ . '/data/priv_key' );
 
         $cart = new \IPG\Cart();
         $cart->add( 'Item', 1, 1.20 );
@@ -34,6 +34,7 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
         fwrite(STDOUT, __METHOD__ . "\n");
         $pr = new \IPG\Purchase($config);
         $pr
+            ->setBannerIndex(1)
             ->setCart($cart)
             ->setOrderId('IPG_SDK_' . time())
             ->setCurrency(978)
