@@ -1,12 +1,13 @@
 {
   "name": "icarddirect/ipg-sdk-php",
   "type": "library",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "license": "MIT",
   "description": "IPG SDK PHP",
   "require": {
     "php": ">=7.3",
     "ext-json": "*",
+    "ext-mbstring": "*",
     "ext-openssl": "*",
     "ext-simplexml": "*",
     "guzzlehttp/guzzle": "^7.8"

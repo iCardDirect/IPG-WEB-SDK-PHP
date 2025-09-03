@@ -118,7 +118,7 @@ class BillingAddress
      */
     public function getBillAddrLine1()
     {
-        return $this->billAddrLine1;
+        return base64_encode($this->billAddrLine1);
     }
 
     /**
@@ -136,7 +136,7 @@ class BillingAddress
      */
     public function getBillAddrLine2()
     {
-        return $this->billAddrLine2;
+        return base64_decode($this->billAddrLine2);
     }
 
     /**
@@ -154,7 +154,7 @@ class BillingAddress
      */
     public function getBillAddrLine3()
     {
-        return $this->billAddrLine3;
+        return base64_encode($this->billAddrLine3);
     }
 
     /**

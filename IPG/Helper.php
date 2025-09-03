@@ -171,4 +171,28 @@ class Helper
 		}, array_change_key_case( $arr, CASE_LOWER ) );
 	}
 
+    /**
+     * Flatten nested array
+     *
+     * @param string $prefix
+     * @param array $array
+     * @param string $keyPathDelimiter
+     * @return array
+     */
+    public static function flattenNested(string $prefix, array $array, string $keyPathDelimiter = '.'): array
+    {
+        $data = [];
+        foreach ($array as $key => $value) {
+            if ($prefix) {
+                $key = $prefix . $keyPathDelimiter . $key;
+            }
+            if (is_array($value)) {
+                $data = array_merge($data, self::flattenNested($key, $value, $keyPathDelimiter));
+            } else {
+                $data[$key] = $value;
+            }
+        }
+
+        return $data;
+    }
 }

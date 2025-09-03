@@ -2,7 +2,7 @@
 
 namespace IPG;
 
-class Purchase extends Base
+class Purchase extends Base implements PaymentTypeInterface
 {
 
 	/**
@@ -16,6 +16,11 @@ class Purchase extends Base
 	 * @var string 
 	 */
 	private $currency;
+
+    /**
+     * @var float
+     */
+    private $amount;
 
 	/**
 	 * Unique order id
@@ -121,12 +126,7 @@ class Purchase extends Base
 		return $this;
 	}
 
-	/**
-	 * Get cart
-	 * 
-	 * @return Cart
-	 */
-	public function getCart()
+	public function getCart(): ?Cart
 	{
 		return $this->cart;
 	}
@@ -236,20 +236,12 @@ class Purchase extends Base
 		return $this;
 	}
 
-	/**
-	 * Get Customer 
-	 * 
-	 * @return Customer
-	 */
-	public function getCustomer()
+	public function getCustomer(): Customer
 	{
 		return $this->customer;
 	}
 
-    /**
-     * @return BillingAddress
-     */
-    public function getBillingAddress()
+    public function getBillingAddress(): BillingAddress
     {
         return $this->billingAddress;
     }
@@ -327,13 +319,8 @@ class Purchase extends Base
 		return $this;
 	}
 
-	/**
-	 * Note
-	 * 
-	 * @return string
-	 */
-	public function getNote()
-	{
+	public function getNote(): string
+    {
 		return $this->note;
 	}
 
@@ -344,7 +331,7 @@ class Purchase extends Base
 	{
 		$this->validate();
 
-		$this->_addPostParam( 'IPGmethod', 'IPGPurchase' );
+		$this->_addPostParam( 'IPGmethod', $this->getMethod() );
 		$this->_addPostParam( 'Originator', $this->getConfig()->getMerchantId() );
 		$this->_addPostParam( 'KeyIndex', $this->getConfig()->getKeyIndex() );
         $this->_addPostParam( 'KeyIndexResp', $this->getConfig()->getKeyIndexResp() );
@@ -465,4 +452,42 @@ class Purchase extends Base
 		return true;
 	}
 
+    public function setAmount(float $amount): self
+    {
+        $this->amount = $amount;
+
+        return $this;
+    }
+
+    public function getAmount()
+    {
+        if ($this->getConfig()->getVersion() >= 4.5) {
+            return number_format($this->amount, 2, '.', '');
+        }
+
+        $this->amount = 0;
+
+        if (!empty($this->getCart()->getCart())) {
+            foreach ($this->getCart()->getCart() as $cartItem) {
+                $this->amount += round( ($cartItem['quantity'] * $cartItem['price'] ), 2 );
+            }
+        }
+
+        return number_format($this->amount, 2, '.', '');
+    }
+
+    public function getMethod(): string
+    {
+        return 'IPGPurchase';
+    }
+
+    public function getCardToken(): string
+    {
+        return '';
+    }
+
+    public function isVerifyCVC(): bool
+    {
+        return false;
+    }
 }

@@ -9,7 +9,7 @@ class Config
 	 * Version of IPG that is used
 	 * @var string 
 	 */
-	private $version = '4.2';
+	private $version = '4.5';
 
 	/**
 	 * by default EN. ISO 2-character code for the desired language on the payment page. 
@@ -342,7 +342,7 @@ class Config
 			throw new IPG_Exception( 'Invalid Key Index Resp' );
 		}
 		if ( empty( $this->getIPGUrl() ) || !Helper::isValidURL( $this->getIPGUrl() ) ) {
-			throw new IPG_Exception( 'Invalid IPC URL' );
+			throw new IPG_Exception( 'Invalid IPG URL' );
 		}
 		if ( empty( $this->getMerchantId() ) || !is_int( $this->getMerchantId() ) ) {
 			throw new IPG_Exception( 'Invalid Merchant ID' );

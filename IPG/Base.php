@@ -3,6 +3,7 @@
 namespace IPG;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\GuzzleException;
 
 class Base
@@ -44,12 +45,7 @@ class Base
 		return $this;
 	}
 
-	/**
-	 * Get Config
-	 * 
-	 * @return Config
-	 */
-	protected function getConfig()
+	public function getConfig(): Config
 	{
 		return $this->_config;
 	}
@@ -108,7 +104,7 @@ class Base
 	 *
 	 * @return string base64 encoded signature
 	 */
-	private function _generateSignature()
+	private function _generateSignature(): string
 	{
         $privKey = openssl_get_privatekey( $this->getConfig()->getPrivateKey() );
 
@@ -118,17 +114,55 @@ class Base
 
             $dataHash = sha1( $concData ); // Create sha1 hash of concatenated data
             openssl_sign( $dataHash, $signature, $privKey ); # Signed data in binary
-        } else {
+
+            return base64_encode( $signature );
+        }
+
+        if ($this->getConfig()->getVersion() < 4.5) {
             // Concatenate all values from post and create base64 encode them
             $signParams = array_map([Helper::class, 'unescape'], $this->params);
             $concData = base64_encode( implode( '', $signParams ) );
 
             openssl_sign( $concData, $signature, $privKey, OPENSSL_ALGO_SHA256 ); # Signed data in binary with SHA256 algo
+
+            return base64_encode( $signature );
         }
 
-        $signature = base64_encode( $signature ); # Base64 encoding of the signature
+        $data = Helper::flattenNested('', $this->params, ':');
 
-        return $signature; # Now you need to add the signature to the post request
+        //remove empty arrays
+        $data = array_filter($data, function ($value) {
+            if (is_array($value) && empty($value)) {
+                return false;
+            }
+            return true;
+        });
+
+        $data = array_change_key_case($data);
+
+        $data = array_map(function ($key, $value) {
+            if (is_bool($value)) {
+                $value = intval($value);
+            }
+
+            if (is_string($value)) {
+                $value = mb_convert_encoding($value, 'UTF8');
+            }
+
+            if ($value === null || $value === '') {
+                return $key . ':';
+            }
+
+            return $key . ':' . $value;
+        }, array_keys($data), array_values($data));
+
+        sort($data, SORT_NATURAL);
+
+        $data = implode(';', $data);
+
+        openssl_sign( $data, $signature, $privKey, OPENSSL_ALGO_SHA256 ); # Signed data in binary with SHA256 algo
+
+        return base64_encode( $signature );
 	}
 
 	/**
@@ -137,7 +171,7 @@ class Base
 	 * @return Response
 	 * @throws IPG_Exception
 	 */
-	protected function _processPost()
+	protected function _processPost(): Response
 	{
 		$this->params['Signature'] = $this->_generateSignature();
 
@@ -147,11 +181,14 @@ class Base
                 'POST',
                 $this->getConfig()->getIPGUrl(),
                 [
-                    'form_params' => $this->params
+                    'form_params' => $this->params,
+                    'verify' => false,
                 ]
             );
 
             return new Response($this->getConfig(), $response->getBody()->getContents(), $this->getOutputFormat());
+        } catch (ClientException $ex) {
+            return new Response($this->getConfig(), $ex->getResponse()->getBody()->getContents(), $this->getOutputFormat());
         } catch (GuzzleException $ex) {
             throw new IPG_Exception( 'Error sending request to iCard IPG. Error message: ' . $ex->getMessage() );
         }
