@@ -8,4 +8,11 @@ class EmbeddedPayment extends PaymentToken
     {
         return 'IPGEmbeddedPayment';
     }
+
+    protected function setPostParams(): void
+    {
+        parent::setPostParams();
+        unset($this->params['ModalType']);
+        $this->_addPostParam( 'PaymentType', $this->paymentType->getMethod() );
+    }
 }

@@ -19,7 +19,7 @@ class Base
 	 * 
 	 * @var array 
 	 */
-	private $params = [];
+	protected $params = [];
 	
 	/**
 	 * @var string 

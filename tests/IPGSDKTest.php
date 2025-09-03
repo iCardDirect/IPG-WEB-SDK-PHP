@@ -251,7 +251,7 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
         $config->setLanguage( 'en' );
         $config->setMerchantId( 33 );
         $config->setMerchantName( 'PHP SDK Test modal with purchase' );;
-        $config->setVersion( '4.3' );
+        $config->setVersion( '4.5' );
         $config->setVirtualTerminalId( '113' );
         $config->setAPIPublicKey( file_get_contents(__DIR__ . '/data/pub_key') );
         $config->setPrivateKey( file_get_contents(__DIR__ . '/data/priv_key') );
@@ -275,17 +275,17 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
 
         $purchase = new \IPG\Purchase($config);
         $purchase
-            ->setCart($cart)
+//            ->setCart($cart)
             ->setBannerIndex(1)
             ->setOrderId('IPG_SDK_' . time())
             ->setCurrency(975)
-//            ->setAmount(3)
+            ->setAmount(3)
             ->setCustomer($customer)
             ->setBillingAddress($billingAddress)
             ->setUrlNotify('https://dev-ipg.icards.eu/sandbox/client/ipgNotify')
             ->setNote('Test PHP SDK');
 
-        $pt = new \IPG\PaymentToken($purchase);
+        $pt = new \IPG\EmbeddedPayment($purchase);
         $pt->setOutputFormat(\IPG\Defines::OUTPUT_FORMAT_JSON);
         $response = $pt->process();
         fwrite(STDOUT, print_r($response->getData()) . "\n");

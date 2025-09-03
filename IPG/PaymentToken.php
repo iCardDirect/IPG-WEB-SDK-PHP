@@ -7,7 +7,7 @@ class PaymentToken extends Base
     /**
      * @var PaymentTypeInterface
      */
-    private $paymentType;
+    protected $paymentType;
 
     public function __construct(PaymentTypeInterface $paymentType)
     {
@@ -23,6 +23,18 @@ class PaymentToken extends Base
     {
         $this->validate();
 
+        $this->setPostParams();
+
+        return $this->_processPost();
+    }
+
+    public function getMethod(): string
+    {
+        return 'IPGPaymentToken';
+    }
+
+    protected function setPostParams(): void
+    {
         $this->_addPostParam( 'IPGmethod', $this->getMethod() );
         $this->_addPostParam( 'KeyIndex', $this->paymentType->getConfig()->getKeyIndex() );
         $this->_addPostParam( 'KeyIndexResp', $this->paymentType->getConfig()->getKeyIndexResp() );
@@ -91,13 +103,6 @@ class PaymentToken extends Base
                 $this->_addPostParam( 'Amount_' . $cartItemLoopIndex, $totalPrice );
             }
         }
-
-        return $this->_processPost();
-    }
-
-    public function getMethod(): string
-    {
-        return 'IPGPaymentToken';
     }
 
     /**
