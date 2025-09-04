@@ -48,6 +48,52 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue(true);
     }
 
+    public function test3DSPurchaseResponse()
+    {
+        $config = new \IPG\Config();
+        $config->setIPGUrl( 'https://dev-ipg.icards.eu/sandbox/' );
+        $config->setKeyIndex( 1 );
+        $config->setKeyIndexResp( 1 );
+        $config->setLanguage( 'en' );
+        $config->setMerchantId( 33 );
+        $config->setMerchantName( 'IPG Example' );
+        $config->setVersion( '4.5' );
+        $config->setVirtualTerminalId( 113 );
+        $config->setAPIPublicKeyPath( __DIR__ . '/data/pub_key' );
+        $config->setPrivateKeyPath( __DIR__ . '/data/priv_key' );
+
+        $customer = new \IPG\Customer();
+        $customer->setEmail( 'customer@email.com' );
+        $customer->setIdentifier('Customer_Identifier');
+        $customer->setMobileNumber('+359888123456');
+        $customer->setIP( '127.0.0.1' );
+
+        $billingAddress = new \IPG\BillingAddress();
+        $billingAddress->setBillAddrCountry( 100 );
+        $billingAddress->setBillAddrPostCode('9000');
+        $billingAddress->setBillAddrCity( 'Varna' );
+        $billingAddress->setBillAddrLine1( 'BPV B1' );
+
+        fwrite(STDOUT, __METHOD__ . "\n");
+        $purchase = new \IPG\ThreeDSPurchaseWithStoredCard($config);
+        $purchase
+            ->setBannerIndex(1)
+            ->setOrderId('IPG_SDK_' . time())
+            ->setCurrency(975)
+            ->setAmount(3)
+            ->setCustomer($customer)
+            ->setBillingAddress($billingAddress)
+            ->setUrlOK('https://dev-ipg.icards.eu/sandbox/client/ipgOk')
+            ->setUrlCancel('https://dev-ipg.icards.eu/sandbox/client/ipgCancel')
+            ->setUrlNotify('https://dev-ipg.icards.eu/sandbox/client/ipgNotify')
+            ->setNote('Test PHP SDK')
+            ->setCardToken('40B1B011C4A21EA65A8AA06E9D767ECE348ADB2E2D4E4E6C3A0536E452619059')
+            ->setIsVerifyCVC(true);
+        $response = $purchase->process();
+        fwrite(STDOUT, print_r((array)$response) . "\n");
+        $this->assertTrue(true);
+    }
+
     public function testFirstRecurringResponse()
     {
         $config = new \IPG\Config();
@@ -201,7 +247,7 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
         $config->setLanguage( 'en' );
         $config->setMerchantId( 33 );
         $config->setMerchantName( 'PHP SDK Test modal with purchase' );;
-        $config->setVersion( '4.3' );
+        $config->setVersion( '4.5' );
         $config->setVirtualTerminalId( '113' );
         $config->setAPIPublicKey( file_get_contents(__DIR__ . '/data/pub_key') );
         $config->setPrivateKey( file_get_contents(__DIR__ . '/data/priv_key') );
@@ -209,7 +255,7 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
         $customer = new \IPG\Customer();
         $customer->setEmail( 'php.sdk.test@test.com' );
         $customer->setIdentifier('Customer_Identifier');
-        $customer->setMobileNumber('+359888123456');
+//        $customer->setMobileNumber('+359888123456');
         $customer->setIP( '127.0.0.1' );
 
         $billingAddress = new \IPG\BillingAddress();
@@ -225,11 +271,11 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
 
         $purchase = new \IPG\Purchase($config);
         $purchase
-            ->setCart($cart)
+//            ->setCart($cart)
             ->setBannerIndex(1)
             ->setOrderId('IPG_SDK_' . time())
             ->setCurrency(975)
-//            ->setAmount(3)
+            ->setAmount(3)
             ->setCustomer($customer)
             ->setBillingAddress($billingAddress)
             ->setUrlNotify('https://dev-ipg.icards.eu/sandbox/client/ipgNotify')
@@ -242,7 +288,103 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue(true);
     }
 
-    public function testEmbeddedPayment()
+    public function testModal3DSPurchase()
+    {
+        $config = new \IPG\Config();
+        $config->setIPGUrl( 'https://dev-ipg.icards.eu/sandbox/' );
+        $config->setKeyIndex( 1 );
+        $config->setKeyIndexResp( 1 );
+        $config->setLanguage( 'en' );
+        $config->setMerchantId( 33 );
+        $config->setMerchantName( 'PHP SDK Test modal with 3DS purchase' );;
+        $config->setVersion( '4.5' );
+        $config->setVirtualTerminalId( '113' );
+        $config->setAPIPublicKey( file_get_contents(__DIR__ . '/data/pub_key') );
+        $config->setPrivateKey( file_get_contents(__DIR__ . '/data/priv_key') );
+
+        $customer = new \IPG\Customer();
+        $customer->setEmail( 'php.sdk.test@test.com' );
+        $customer->setIdentifier('Customer_Identifier');
+//        $customer->setMobileNumber('+359888123456');
+        $customer->setIP( '127.0.0.1' );
+
+        $billingAddress = new \IPG\BillingAddress();
+        $billingAddress->setBillAddrCountry( 100 );
+        $billingAddress->setBillAddrPostCode('9000');
+        $billingAddress->setBillAddrCity( 'Varna' );
+        $billingAddress->setBillAddrLine1( 'BPV B1' );
+
+        $purchase = new \IPG\ThreeDSPurchaseWithStoredCard($config);
+        $purchase
+            ->setBannerIndex(1)
+            ->setOrderId('IPG_SDK_' . time())
+            ->setCurrency(975)
+            ->setAmount(3)
+            ->setCustomer($customer)
+            ->setBillingAddress($billingAddress)
+            ->setUrlNotify('https://dev-ipg.icards.eu/sandbox/client/ipgNotify')
+            ->setNote('Test PHP SDK')
+            ->setCardToken('40B1B011C4A21EA65A8AA06E9D767ECE348ADB2E2D4E4E6C3A0536E452619059')
+            ->setIsVerifyCVC(true);
+
+        $pt = new \IPG\PaymentToken($purchase);
+        $pt->setOutputFormat(\IPG\Defines::OUTPUT_FORMAT_JSON);
+        $response = $pt->process();
+        fwrite(STDOUT, print_r($response->getData()) . "\n");
+        $this->assertTrue(true);
+    }
+
+    public function testEmbeddedPurchase()
+    {
+        $config = new \IPG\Config();
+        $config->setIPGUrl( 'https://dev-ipg.icards.eu/sandbox/' );
+        $config->setKeyIndex( 1 );
+        $config->setKeyIndexResp( 1 );
+        $config->setLanguage( 'en' );
+        $config->setMerchantId( 33 );
+        $config->setMerchantName( 'PHP SDK Test modal with purchase' );;
+        $config->setVersion( '4.5' );
+        $config->setVirtualTerminalId( '113' );
+        $config->setAPIPublicKey( file_get_contents(__DIR__ . '/data/pub_key') );
+        $config->setPrivateKey( file_get_contents(__DIR__ . '/data/priv_key') );
+
+        $customer = new \IPG\Customer();
+        $customer->setEmail( 'php.sdk.test@test.com' );
+        $customer->setIdentifier('Customer_Identifier');
+//        $customer->setMobileNumber('+359888123456');
+        $customer->setIP( '127.0.0.1' );
+
+        $billingAddress = new \IPG\BillingAddress();
+        $billingAddress->setBillAddrCountry( 100 );
+        $billingAddress->setBillAddrPostCode('9000');
+        $billingAddress->setBillAddrCity( 'Varna' );
+        $billingAddress->setBillAddrLine1( 'BPV B1' );
+
+        $cart = new \IPG\Cart();
+        $cart->add( 'Item', 1, 1.20 );
+        $cart->add( 'Another Item', 2, 2.00 );
+        $cart->add( 'Third item', 3, 3.00 );
+
+        $purchase = new \IPG\Purchase($config);
+        $purchase
+//            ->setCart($cart)
+            ->setBannerIndex(1)
+            ->setOrderId('IPG_SDK_' . time())
+            ->setCurrency(975)
+            ->setAmount(3)
+            ->setCustomer($customer)
+            ->setBillingAddress($billingAddress)
+            ->setUrlNotify('https://dev-ipg.icards.eu/sandbox/client/ipgNotify')
+            ->setNote('Test PHP SDK');
+
+        $pt = new \IPG\EmbeddedPayment($purchase);
+        $pt->setOutputFormat(\IPG\Defines::OUTPUT_FORMAT_JSON);
+        $response = $pt->process();
+        fwrite(STDOUT, print_r($response->getData()) . "\n");
+        $this->assertTrue(true);
+    }
+
+    public function testEmbedded3DSPurchase()
     {
         $config = new \IPG\Config();
         $config->setIPGUrl( 'https://dev-ipg.icards.eu/sandbox/' );
@@ -273,9 +415,8 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
         $cart->add( 'Another Item', 2, 2.00 );
         $cart->add( 'Third item', 3, 3.00 );
 
-        $purchase = new \IPG\Purchase($config);
+        $purchase = new \IPG\ThreeDSPurchaseWithStoredCard($config);
         $purchase
-//            ->setCart($cart)
             ->setBannerIndex(1)
             ->setOrderId('IPG_SDK_' . time())
             ->setCurrency(975)
@@ -283,7 +424,9 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
             ->setCustomer($customer)
             ->setBillingAddress($billingAddress)
             ->setUrlNotify('https://dev-ipg.icards.eu/sandbox/client/ipgNotify')
-            ->setNote('Test PHP SDK');
+            ->setNote('Test PHP SDK')
+            ->setCardToken('40B1B011C4A21EA65A8AA06E9D767ECE348ADB2E2D4E4E6C3A0536E452619059')
+            ->setIsVerifyCVC(true);
 
         $pt = new \IPG\EmbeddedPayment($purchase);
         $pt->setOutputFormat(\IPG\Defines::OUTPUT_FORMAT_JSON);

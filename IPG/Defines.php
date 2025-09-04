@@ -57,5 +57,4 @@ class Defines
 
         return (isset( $statusMessages[$status] )) ? $statusMessages[$status] : 'Status not found';
 	}
-
 }

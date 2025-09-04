@@ -51,7 +51,7 @@ $config->setKeyIndexResp( 1 );
 $config->setLanguage( 'en' );
 $config->setMerchantId( 33 );
 $config->setMerchantName( 'IPG Example' );
-$config->setVersion( '4.2' );
+$config->setVersion( '4.5' );
 $config->setVirtualTerminalId( '112' );
 $config->setAPIPublicKey( $pubKey );
 $config->setPrivateKey( $privKey );
@@ -59,7 +59,7 @@ $config->setPrivateKey( $privKey );
 
 Keys can be set by path, using path methods.
 
-### Build Cart Object
+### Build Cart Object /removed from version 4.5/
 
 ```php
 $cart = new \IPG\Cart();
@@ -95,8 +95,10 @@ $billingAddress->setBillAddrLine3( 'Line3' );
 
 ```php
 $purchase = new IPG\Purchase( $config );
-$purchase->setCart( $cart );
+$purchase->setBannerIndex(8);
+$purchase->setCart( $cart ); //required for a version <= 4.4
 $purchase->setCurrency( '978' );
+$purchase->setAmount( 10.50 ); //required for a version >= 4.5
 $purchase->setCustomer( $customer );
 $purchase->setBillingAddress( $billingAddress );
 $purchase->setOrderId( time() );
@@ -105,6 +107,52 @@ $purchase->setUrlNotify( 'http://yoursite.com//urlNotify' );
 $purchase->setUrlCancel( 'http://yoursite.com//urlCancel' );
 try {
 	$purchase->process();
+} catch ( \IPG\IPG_Exception $exc ) {
+	echo $exc->getMessage();
+}
+```
+
+### Process 3DSPurchaseWithStoredCard
+
+```php
+$purchase = new IPG\ThreeDSPurchaseWithStoredCard( $config );
+$purchase->setBannerIndex(8);
+$purchase->setCurrency( 978 );
+$purchase->setAmount( 10.50 );
+$purchase->setCustomer( $customer );
+$purchase->setBillingAddress( $billingAddress );
+$purchase->setOrderId( time() );
+$purchase->setUrlOK( 'http://yoursite.com//urlOK' );
+$purchase->setUrlNotify( 'http://yoursite.com//urlNotify' );
+$purchase->setUrlCancel( 'http://yoursite.com//urlCancel' );
+$purchase->setCardToken('40B1B011C4A21E ... 36E452619059');
+$purchase->setIsVerifyCVC(true);
+try {
+	$purchase->process();
+} catch ( \IPG\IPG_Exception $exc ) {
+	echo $exc->getMessage();
+}
+```
+
+### Process PaymentToken
+
+```php
+$paymentToken = new IPG\PaymentToken( $purchase );
+$paymentToken->setOutputFormat(\IPG\Defines::OUTPUT_FORMAT_JSON);
+try {
+	$paymentToken->process();
+} catch ( \IPG\IPG_Exception $exc ) {
+	echo $exc->getMessage();
+}
+```
+
+### Process EmbeddedPayment
+
+```php
+$embeddedPayment = new IPG\EmbeddedPayment( $purchase );
+$embeddedPayment->setOutputFormat(\IPG\Defines::OUTPUT_FORMAT_JSON);
+try {
+	$embeddedPayment->process();
 } catch ( \IPG\IPG_Exception $exc ) {
 	echo $exc->getMessage();
 }

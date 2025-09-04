@@ -8,7 +8,7 @@ class Response
 	private $config;
 	private $data;
 	private $format;
-	private $validateSignature = false;
+	private $validateSignature;
 
 	public function __construct(Config $config, $rawData, $format, $validateSignature = false)
 	{
@@ -72,11 +72,15 @@ class Response
 	/**
 	 * Request param: Status
 	 *
-	 * @return int
+	 * @return null|int
 	 */
-	public function getStatus()
+	public function getStatus(): ?int
 	{
-		return ( int ) Helper::getArrayVal( $this->data, 'status' );
+        if ($this->config->getVersion() >= 4.3) {
+            return Helper::getArrayVal( $this->data, 'Status', null );
+        }
+
+		return Helper::getArrayVal( $this->data, 'status', null );
 	}
 
 	/**
@@ -84,8 +88,12 @@ class Response
 	 *
 	 * @return string
 	 */
-	public function getStatusMsg()
+	public function getStatusMsg(): string
 	{
+        if ($this->config->getVersion() >= 4.3) {
+            return Helper::getArrayVal( $this->data, 'StatusMsg', 'Missing status message' );
+        }
+
 		return Defines::getMessageByStatus( $this->getStatus() );
 	}
 
@@ -105,7 +113,7 @@ class Response
 	 * @return boolean
 	 * @throws IPG_Exception
 	 */
-	private function verifySignature()
+	private function verifySignature(): bool
 	{
 		if ( empty( $this->data['signature'] ) ) {
 			throw new IPG_Exception( 'Missing signature!' );
@@ -114,22 +122,7 @@ class Response
 		$signature = $this->data['signature'];
 		unset( $this->data['signature'] );
 
-		$pubKeyId = openssl_get_publickey( $this->config->getAPIPublicKey() );
-		$signature = base64_decode( $signature );
-
-        if ($this->config->getVersion() < Defines::NEW_SIGNATURE_VERSION) {
-            $concData = urlencode( stripslashes( implode( '', $this->data ) ) );
-
-            $res = openssl_verify( sha1( $concData ), $signature, $pubKeyId );
-		} else {
-            $concData = base64_encode( implode( '', $this->data ) );
-
-            $res = openssl_verify( $concData, $signature, $pubKeyId, OPENSSL_ALGO_SHA256 );
-        }
-
-		openssl_free_key( $pubKeyId );
-
-        return $res == 1;
+        return Crypto::validateSignature($this->config, $this->data, $signature);
 	}
 
 }

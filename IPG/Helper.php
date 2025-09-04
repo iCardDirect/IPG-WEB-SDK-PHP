@@ -195,4 +195,20 @@ class Helper
 
         return $data;
     }
+
+    public static function isValidPaymentContext(string $paymentContext): bool
+    {
+        return in_array($paymentContext, [
+            'GooglePay',
+            'ApplePay',
+        ]);
+    }
+
+    public static function isValidPostResultAction(string $postResultAction): bool
+    {
+        return in_array($postResultAction, [
+            'Redirect',
+            'CloseWindow'
+        ]);
+    }
 }

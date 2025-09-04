@@ -83,6 +83,16 @@ class Purchase extends Base implements PaymentTypeInterface
 	 */
 	private $note;
 
+    /**
+     * @var string
+     */
+    private $paymentContext;
+
+    /**
+     * @var string
+     */
+    private $postResultAction;
+
 	public function __construct(Config $config)
 	{
 		$this->_setConfig( $config );
@@ -339,6 +349,13 @@ class Purchase extends Base implements PaymentTypeInterface
 		$this->_addPostParam( 'Language', $this->getConfig()->getLanguage() );
 		$this->_addPostParam( 'MID', $this->getConfig()->getVirtualTerminalId() );
 		$this->_addPostParam( 'MIDName', $this->getConfig()->getMerchantName() );
+        if (!empty($this->getPaymentContext())) {
+            $this->_addPostParam( 'IPGPaymentContext', $this->getPaymentContext() );
+        }
+
+        if (!empty($this->getPostResultAction())) {
+            $this->_addPostParam( 'PostResultAction', $this->getPostResultAction() );
+        }
 
 		$this->_addPostParam( 'OrderID', $this->getOrderId() );
 		$this->_addPostParam( 'BannerIndex', $this->getBannerIndex() );
@@ -435,6 +452,14 @@ class Purchase extends Base implements PaymentTypeInterface
 			throw new IPG_Exception( 'Invalid OrderLink param' );
 		}
 
+        if (!empty($this->getPaymentContext()) && !Helper::isValidPaymentContext($this->getPaymentContext())) {
+            throw new IPG_Exception( 'Invalid PaymentContext param' );
+        }
+
+        if (!empty($this->getPostResultAction()) && !Helper::isValidPostResultAction($this->getPostResultAction())) {
+            throw new IPG_Exception( 'Invalid PostResultAction param' );;
+        }
+
 		try {
 			$this->getConfig()->validate();
 		}
@@ -489,5 +514,27 @@ class Purchase extends Base implements PaymentTypeInterface
     public function isVerifyCVC(): bool
     {
         return false;
+    }
+
+    public function setPaymentContext(string $paymentContext): Purchase
+    {
+        $this->paymentContext = $paymentContext;
+        return $this;
+    }
+    
+    public function getPaymentContext(): ?string
+    {
+        return $this->paymentContext;
+    }
+
+    public function getPostResultAction(): ?string
+    {
+        return $this->postResultAction;
+    }
+
+    public function setPostResultAction(string $postResultAction): Purchase
+    {
+        $this->postResultAction = $postResultAction;
+        return $this;
     }
 }

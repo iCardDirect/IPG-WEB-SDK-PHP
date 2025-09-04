@@ -17,4 +17,6 @@ interface PaymentTypeInterface
     public function getCardToken(): string;
     public function isVerifyCVC(): bool;
     public function getNote(): string;
+    public function getPaymentContext(): ?string;
+    public function getPostResultAction(): ?string;
 }
