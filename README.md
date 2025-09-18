@@ -49,10 +49,10 @@ $config->setIPGUrl( 'https://dev-ipg.icards.eu/sandbox/' );
 $config->setKeyIndex( 1 );
 $config->setKeyIndexResp( 1 );
 $config->setLanguage( 'en' );
-$config->setMerchantId( 33 );
+$config->setMerchantId( 33 ); //Originator
 $config->setMerchantName( 'IPG Example' );
 $config->setVersion( '4.5' );
-$config->setVirtualTerminalId( '112' );
+$config->setVirtualTerminalId( '112' ); //MID
 $config->setAPIPublicKey( $pubKey );
 $config->setPrivateKey( $privKey );
 ```
