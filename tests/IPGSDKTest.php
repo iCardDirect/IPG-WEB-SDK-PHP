@@ -194,10 +194,9 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
         $config->setIPGUrl( 'https://dev-ipg.icards.eu/sandbox/' );
         $config->setKeyIndex( 1 );
         $config->setKeyIndexResp( 1 );
-        $config->setLanguage( 'en' );
         $config->setMerchantId( 33 );
-        $config->setVersion( '4.2' );
-        $config->setVirtualTerminalId( '112' );
+        $config->setVersion( '4.5' );
+        $config->setVirtualTerminalId( '113' );
         $config->setAPIPublicKey( file_get_contents(__DIR__ . '/data/pub_key') );
         $config->setPrivateKey( file_get_contents(__DIR__ . '/data/priv_key') );
 
@@ -209,8 +208,8 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
             ->setCustomer($customer)
             ->setOrderId('IPG_SDK_' . time())
             ->setAmount(11.01)
-            ->setCurrency(978)
-            ->setTrnRef('20240312133000327200')
+            ->setCurrency(975)
+            ->setTrnRef('20250925084241282100')
             ->setOutputFormat(\IPG\Defines::OUTPUT_FORMAT_JSON);
         $response = $refund->process();
         fwrite(STDOUT, print_r($response->getData()) . "\n");
@@ -223,15 +222,16 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
         $config->setIPGUrl( 'https://dev-ipg.icards.eu/sandbox/' );
         $config->setKeyIndex( 1 );
         $config->setKeyIndexResp( 1 );
-        $config->setLanguage( 'en' );
         $config->setMerchantId( 33 );
-        $config->setVersion( '4.2' );
+        $config->setVersion( '4.5' );
+        $config->setVirtualTerminalId( '113' );
         $config->setAPIPublicKey( file_get_contents(__DIR__ . '/data/pub_key') );
         $config->setPrivateKey( file_get_contents(__DIR__ . '/data/priv_key') );
 
         $reversal = new \IPG\Reversal($config);
         $reversal
-            ->setTrnRef('20240312133000327200')
+            ->setOrderId('IPG_SDK_' . time())
+            ->setTrnRef('20250925084241282100')
             ->setOutputFormat(\IPG\Defines::OUTPUT_FORMAT_JSON);
         $response = $reversal->process();
         fwrite(STDOUT, print_r($response->getData()) . "\n");

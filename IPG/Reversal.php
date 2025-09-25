@@ -4,17 +4,19 @@ namespace IPG;
 
 class Reversal extends Base
 {
-	/**
+    /**
+     * Unique order id
+     *
+     * @var string
+     */
+    private $orderId;
+
+    /**
 	 * Transaction identifier. Returned by IPG after Purchase
 	 * 
 	 * @var string 
 	 */
 	private $trnRef;
-
-	public function __construct(Config $config)
-	{
-		$this->_setConfig( $config );
-	}
 
 	/**
 	 * Set transaction reference. Unique identifier, returned after purchase
@@ -23,8 +25,8 @@ class Reversal extends Base
 	 * 
 	 * @return Reversal
 	 */
-	public function setTrnRef($trnRef)
-	{
+	public function setTrnRef(string $trnRef): Reversal
+    {
 		$this->trnRef = $trnRef;
 		
 		return $this;
@@ -34,8 +36,8 @@ class Reversal extends Base
 	 * Transaction Reference
 	 * @return string
 	 */
-	public function getTrnRef()
-	{
+	public function getTrnRef(): string
+    {
 		return $this->trnRef;
 	}
 	
@@ -51,9 +53,10 @@ class Reversal extends Base
 		$this->_addPostParam( 'KeyIndex', $this->getConfig()->getKeyIndex() );
         $this->_addPostParam( 'KeyIndexResp', $this->getConfig()->getKeyIndexResp() );
 		$this->_addPostParam( 'IPGVersion', $this->getConfig()->getVersion() );
-		$this->_addPostParam( 'Language', $this->getConfig()->getLanguage() );
+        $this->_addPostParam( 'MID', $this->getConfig()->getVirtualTerminalId() );
 
-		$this->_addPostParam( 'IPG_Trnref', $this->getTrnRef() );
+        $this->_addPostParam( 'OrderID', $this->getOrderId() );
+        $this->_addPostParam( 'IPG_Trnref', $this->getTrnRef() );
 		$this->_addPostParam( 'OutputFormat', $this->getOutputFormat() );
 		
 		return $this->_processPost();
@@ -81,4 +84,14 @@ class Reversal extends Base
 		return true;
 	}
 
+    public function getOrderId(): string
+    {
+        return $this->orderId;
+    }
+
+    public function setOrderId(string $orderId): Reversal
+    {
+        $this->orderId = $orderId;
+        return $this;
+    }
 }

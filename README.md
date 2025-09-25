@@ -162,7 +162,8 @@ try {
 
 ```php
 $reversal = new IPG\Reversal( $config );
-$reversal->setTrnRef('20240312133000327200');
+$reversal->setOrderId( time() )
+$reversal->setTrnRef('20250925084241282100');
 $reversal->setOutputFormat(\IPG\Defines::OUTPUT_FORMAT_JSON);
 try {
 	$response = $reversal->process();
@@ -179,7 +180,7 @@ $refund->setCustomer( $customer );
 $refund->setOrderId( time() );
 $refund->setAmount(1.00);
 $refund->setCurrency(978);
-$refund->setTrnRef('20240312133000327200');
+$refund->setTrnRef('20250925084241282100');
 $refund->setOutputFormat(\IPG\Defines::OUTPUT_FORMAT_JSON);
 try {
 	$response = $refund->process();
