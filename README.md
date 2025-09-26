@@ -150,6 +150,7 @@ try {
 
 ```php
 $embeddedPayment = new IPG\EmbeddedPayment( $purchase );
+$embeddedPayment->setTheme('ThemeName');
 $embeddedPayment->setOutputFormat(\IPG\Defines::OUTPUT_FORMAT_JSON);
 try {
 	$embeddedPayment->process();

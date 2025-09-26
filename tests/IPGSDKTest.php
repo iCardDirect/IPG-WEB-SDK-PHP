@@ -378,6 +378,7 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
             ->setNote('Test PHP SDK');
 
         $pt = new \IPG\EmbeddedPayment($purchase);
+        $pt->setTheme('theme2');
         $pt->setOutputFormat(\IPG\Defines::OUTPUT_FORMAT_JSON);
         $response = $pt->process();
         fwrite(STDOUT, print_r($response->getData()) . "\n");
@@ -429,6 +430,7 @@ class IPGSDKTest extends \PHPUnit\Framework\TestCase
             ->setIsVerifyCVC(true);
 
         $pt = new \IPG\EmbeddedPayment($purchase);
+        $pt->setTheme('theme2');
         $pt->setOutputFormat(\IPG\Defines::OUTPUT_FORMAT_JSON);
         $response = $pt->process();
         fwrite(STDOUT, print_r($response->getData()) . "\n");
