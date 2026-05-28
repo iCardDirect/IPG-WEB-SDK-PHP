@@ -350,8 +350,14 @@ class Config
 		if ( $this->getVersion() == null ) {
 			throw new IPG_Exception( 'Invalid IPG Version' );
 		}
-		if ( $hasVirtualTerminalId && empty( $this->getVirtualTerminalId() ) ) {
-			throw new IPG_Exception( 'Invalid Virtual Terminal ID' );
+        if ( $hasVirtualTerminalId ) {
+            if ( empty( $this->getVirtualTerminalId() ) ) {
+    			throw new IPG_Exception( 'Missing Virtual Terminal ID' );
+            }
+
+            if ( !Helper::isValidMID( $this->getVirtualTerminalId() ) ) {
+                throw new IPG_Exception( 'Invalid Virtual Terminal ID' );
+            }
 		}
 		if ( !openssl_get_privatekey( $this->getPrivateKey() ) ) {
 			throw new IPG_Exception( 'Invalid Private key' );

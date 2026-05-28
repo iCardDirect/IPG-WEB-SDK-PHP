@@ -156,22 +156,7 @@ class Refund extends Base
 	 */
 	public function process()
 	{
-		$this->validate();
-
-		$this->_addPostParam( 'IPGmethod', 'IPGRefund' );
-		$this->_addPostParam( 'Originator', $this->getConfig()->getMerchantId() );
-		$this->_addPostParam( 'KeyIndex', $this->getConfig()->getKeyIndex() );
-        $this->_addPostParam( 'KeyIndexResp', $this->getConfig()->getKeyIndexResp() );
-		$this->_addPostParam( 'IPGVersion', $this->getConfig()->getVersion() );
-		$this->_addPostParam( 'Language', $this->getConfig()->getLanguage() );
-		$this->_addPostParam( 'MID', $this->getConfig()->getVirtualTerminalId() );
-
-		$this->_addPostParam( 'OrderID', $this->getOrderId() );
-		$this->_addPostParam( 'Email', $this->getCustomer()->getEmail() );
-		$this->_addPostParam( 'IPG_Trnref', $this->getTrnRef() );
-		$this->_addPostParam( 'Amount', $this->getAmount() );
-		$this->_addPostParam( 'Currency', $this->getCurrency() );
-		$this->_addPostParam( 'OutputFormat', $this->getOutputFormat() );
+        $this->_buildPostData();
 
 		return $this->_processPost();
 	}
@@ -203,5 +188,28 @@ class Refund extends Base
 
 		return true;
 	}
+
+    protected function _buildPostData(): void
+    {
+        $this->params = [];
+
+        $this->validate();
+
+        $this->_addPostParam( 'IPGmethod', 'IPGRefund' );
+        $this->_addPostParam( 'Originator', $this->getConfig()->getMerchantId() );
+        $this->_addPostParam( 'KeyIndex', $this->getConfig()->getKeyIndex() );
+        $this->_addPostParam( 'KeyIndexResp', $this->getConfig()->getKeyIndexResp() );
+        $this->_addPostParam( 'IPGVersion', $this->getConfig()->getVersion() );
+        $this->_addPostParam( 'MID', Helper::formatMID( $this->getConfig()->getVirtualTerminalId() ) );
+
+        $this->_addPostParam( 'OrderID', $this->getOrderId() );
+        $this->_addPostParam( 'Email', $this->getCustomer()->getEmail() );
+        $this->_addPostParam( 'IPG_Trnref', $this->getTrnRef() );
+        $this->_addPostParam( 'Amount', Helper::formatAmount( $this->getAmount() ) );
+        $this->_addPostParam( 'Currency', $this->getCurrency() );
+        $this->_addPostParam( 'OutputFormat', $this->getOutputFormat() );
+
+        $this->_addPostParam('Signature', Crypto::generateSignature( $this->getConfig(), $this->params ));
+    }
 
 }

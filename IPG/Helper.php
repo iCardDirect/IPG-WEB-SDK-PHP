@@ -71,6 +71,18 @@ class Helper
 				] );
 	}
 
+    /**
+     * Validate MID
+     *
+     * @param $mid
+     *
+     * @return false|int
+     */
+    public static function isValidMID($mid)
+    {
+        return preg_match('/^[0-9]{1,15}$/', $mid);
+    }
+
 	/**
 	 * Escape HTML special chars
 	 *
@@ -210,5 +222,15 @@ class Helper
             'Redirect',
             'CloseWindow'
         ]);
+    }
+
+    public static function formatMID($mid): string
+    {
+        return str_pad(intval($mid), 15, '0', STR_PAD_LEFT);
+    }
+
+    public static function formatAmount($amount): string
+    {
+        return number_format($amount, 2, '.', '');
     }
 }

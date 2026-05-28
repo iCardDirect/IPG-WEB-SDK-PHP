@@ -118,7 +118,11 @@ class BillingAddress
      */
     public function getBillAddrLine1()
     {
-        return base64_encode($this->billAddrLine1);
+        if (!empty($this->billAddrLine1)) {
+            return base64_encode($this->billAddrLine1);
+        }
+
+        return '';
     }
 
     /**
@@ -136,7 +140,11 @@ class BillingAddress
      */
     public function getBillAddrLine2()
     {
-        return base64_decode($this->billAddrLine2);
+        if (!empty($this->billAddrLine2)) {
+            return base64_decode($this->billAddrLine2);
+        }
+
+        return '';
     }
 
     /**
@@ -154,7 +162,11 @@ class BillingAddress
      */
     public function getBillAddrLine3()
     {
-        return base64_encode($this->billAddrLine3);
+        if (!empty($this->billAddrLine3)) {
+            return base64_encode($this->billAddrLine3);
+        }
+
+        return '';
     }
 
     /**

@@ -200,6 +200,10 @@ class ThreeDSPurchaseWithStoredCard extends Base implements PaymentTypeInterface
 
     public function getCardToken(): string
     {
+        if (empty($this->cardToken)) {
+            return '';
+        }
+
         if ($this->getConfig()->getVersion() >= 4.5) {
             return $this->cardToken;
         }
@@ -307,10 +311,18 @@ class ThreeDSPurchaseWithStoredCard extends Base implements PaymentTypeInterface
      * Process IPG3DSPurchaseWithStoredCard
      *
      * @return void
-     * @throws IPG_Exception
      */
     public function process()
     {
+        $this->_buildPostData();
+
+        $this->_processHtmlPost();
+    }
+
+    protected function _buildPostData(): void
+    {
+        $this->params = [];
+
         $this->validate();
 
         $this->_addPostParam( 'IPGmethod', $this->getMethod() );
@@ -335,9 +347,9 @@ class ThreeDSPurchaseWithStoredCard extends Base implements PaymentTypeInterface
         }
         $this->_addPostParam( 'VerifyCVC', $this->isVerifyCVC() ? '1' : '0' );
 
-        $this->_addPostParam( 'MID', $this->getConfig()->getVirtualTerminalId() );
+        $this->_addPostParam( 'MID', Helper::formatMID( $this->getConfig()->getVirtualTerminalId() ) );
         $this->_addPostParam( 'Currency', $this->getCurrency() );
-        $this->_addPostParam( 'Amount', $this->getAmount() );
+        $this->_addPostParam( 'Amount', Helper::formatAmount( $this->getAmount() ) );
         $this->_addPostParam( 'MIDName', $this->getConfig()->getMerchantName() );
         $this->_addPostParam( 'OrderID', $this->getOrderId() );
 
@@ -373,6 +385,6 @@ class ThreeDSPurchaseWithStoredCard extends Base implements PaymentTypeInterface
             }
         }
 
-        $this->_processHtmlPost();
+        $this->_addPostParam('Signature', Crypto::generateSignature( $this->getConfig(), $this->params ));
     }
 }

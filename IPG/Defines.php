@@ -5,6 +5,7 @@ namespace IPG;
 class Defines
 {
     const NEW_SIGNATURE_VERSION = 4.1;
+    const CART_ITEMS_MAX_REQUIREMENT_VERSION = 4.3;
 	const OUTPUT_FORMAT_XML = 'xml';
 	const OUTPUT_FORMAT_JSON = 'json';
 	const OUTPUT_FORMAT_POST = 'post';

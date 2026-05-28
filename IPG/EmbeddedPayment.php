@@ -27,11 +27,16 @@ class EmbeddedPayment extends PaymentToken
         return $this;
     }
 
-    protected function setPostParams(): void
+    protected function _buildPostData(): void
     {
-        parent::setPostParams();
+        parent::_buildPostData();
+
         unset($this->params['ModalType']);
+        unset($this->params['Signature']);
+
         $this->_addPostParam( 'Theme', $this->getTheme() );
         $this->_addPostParam( 'PaymentType', $this->paymentType->getMethod() );
+
+        $this->_addPostParam('Signature', Crypto::generateSignature( $this->getConfig(), $this->params ));
     }
 }

@@ -168,7 +168,7 @@ class Purchase extends Base implements PaymentTypeInterface
 	/**
 	 * Set Back-End Notify URL address
 	 * 
-	 * @param type $urlNotify
+	 * @param string $urlNotify
 	 * 
 	 * @return Purchase
 	 */
@@ -329,7 +329,7 @@ class Purchase extends Base implements PaymentTypeInterface
 		return $this;
 	}
 
-	public function getNote(): string
+	public function getNote(): ?string
     {
 		return $this->note;
 	}
@@ -339,81 +339,7 @@ class Purchase extends Base implements PaymentTypeInterface
 	 */
 	public function process()
 	{
-		$this->validate();
-
-		$this->_addPostParam( 'IPGmethod', $this->getMethod() );
-		$this->_addPostParam( 'Originator', $this->getConfig()->getMerchantId() );
-		$this->_addPostParam( 'KeyIndex', $this->getConfig()->getKeyIndex() );
-        $this->_addPostParam( 'KeyIndexResp', $this->getConfig()->getKeyIndexResp() );
-		$this->_addPostParam( 'IPGVersion', $this->getConfig()->getVersion() );
-		$this->_addPostParam( 'Language', $this->getConfig()->getLanguage() );
-		$this->_addPostParam( 'MID', $this->getConfig()->getVirtualTerminalId() );
-		$this->_addPostParam( 'MIDName', $this->getConfig()->getMerchantName() );
-        if (!empty($this->getPaymentContext())) {
-            $this->_addPostParam( 'IPGPaymentContext', $this->getPaymentContext() );
-        }
-
-        if (!empty($this->getPostResultAction())) {
-            $this->_addPostParam( 'PostResultAction', $this->getPostResultAction() );
-        }
-
-		$this->_addPostParam( 'OrderID', $this->getOrderId() );
-		$this->_addPostParam( 'BannerIndex', $this->getBannerIndex() );
-		$this->_addPostParam( 'Currency', $this->getCurrency() );
-		$this->_addPostParam( 'CustomerIP', $this->customer->getIP() );
-		$this->_addPostParam( 'Email', $this->customer->getEmail() );
-        if ( !empty( $this->customer->getIdentifier() ) ) {
-            $this->_addPostParam( 'CustomerIdentifier', $this->customer->getIdentifier() );
-        }
-        if ( !empty( $this->customer->getMobileNumber() ) ) {
-            $this->_addPostParam( 'MobileNumber', $this->customer->getMobileNumber() );
-        }
-
-        if ( !empty( $this->getOrderLink() ) ) {
-			$this->_addPostParam( 'OrderLink', $this->getOrderLink() );
-		}
-		if ( !empty( $this->getNote() ) ) {
-			$this->_addPostParam( 'Note', $this->getNote() );
-		}
-
-		$this->_addPostParam( 'URL_OK', $this->getUrlOK() );
-		$this->_addPostParam( 'URL_Cancel', $this->getUrlCancel() );
-		$this->_addPostParam( 'URL_Notify', $this->getUrlNotify() );
-
-        if ( !empty( $this->billingAddress ) ) {
-            $this->_addPostParam( 'BillAddrCountry', $this->billingAddress->getBillAddrCountry() );
-            $this->_addPostParam( 'BillAddrPostCode', $this->billingAddress->getBillAddrPostCode() );
-            $this->_addPostParam( 'BillAddrCity', $this->billingAddress->getBillAddrCity() );
-            $this->_addPostParam( 'BillAddrLine1', $this->billingAddress->getBillAddrLine1() );
-
-            if ( !empty($this->billingAddress->getBillAddrState() ) ) {
-                $this->_addPostParam( 'BillAddrState', $this->billingAddress->getBillAddrState() );
-            }
-
-            if ( !empty($this->billingAddress->getBillAddrLine2() ) ) {
-                $this->_addPostParam( 'BillAddrLine2', $this->billingAddress->getBillAddrLine2() );
-            }
-
-            if ( !empty($this->billingAddress->getBillAddrLine3() ) ) {
-                $this->_addPostParam( 'BillAddrLine3', $this->billingAddress->getBillAddrLine3() );
-            }
-        }
-
-        $this->_addPostParam( 'CartItems', $this->getCart()->getTotalItemsCount() );
-		$cartItemLoopIndex = 0;
-		$totalCartAmount = 0;
-
-		foreach ( $this->getCart()->getCart() as $cartItem ) {
-			$cartItemLoopIndex += 1;
-			$this->_addPostParam( 'Article_' . $cartItemLoopIndex, $cartItem['name'] );
-			$this->_addPostParam( 'Quantity_' . $cartItemLoopIndex, $cartItem['quantity'] );
-			$this->_addPostParam( 'Price_' . $cartItemLoopIndex, $cartItem['price'] );
-			$this->_addPostParam( 'Currency_' . $cartItemLoopIndex, $this->getCurrency() );
-			$totalPrice = round( ($cartItem['quantity'] * $cartItem['price'] ), 2 );
-			$totalCartAmount += $totalPrice;
-			$this->_addPostParam( 'Amount_' . $cartItemLoopIndex, $totalPrice );
-		}
-		$this->_addPostParam( 'Amount', $totalCartAmount );
+        $this->_buildPostData();
 
 		$this->_processHtmlPost();
 
@@ -467,11 +393,13 @@ class Purchase extends Base implements PaymentTypeInterface
 			throw new IPG_Exception( 'Invalid Config details: ' . $ex->getMessage() );
 		}
 
-		try {
-			$this->getCart()->validate();
-		}
-		catch ( \Exception $ex ) {
-			throw new IPG_Exception( 'Invalid Cart details: ' . $ex->getMessage() );
+        if ($this->getConfig()->getVersion() <= Defines::CART_ITEMS_MAX_REQUIREMENT_VERSION) {
+            try {
+                $this->getCart()->validate();
+            }
+            catch ( \Exception $ex ) {
+                throw new IPG_Exception( 'Invalid Cart details: ' . $ex->getMessage() );
+            }
 		}
 
 		return true;
@@ -486,19 +414,19 @@ class Purchase extends Base implements PaymentTypeInterface
 
     public function getAmount()
     {
-        if ($this->getConfig()->getVersion() >= 4.5) {
-            return number_format($this->amount, 2, '.', '');
+        if ($this->getConfig()->getVersion() > Defines::CART_ITEMS_MAX_REQUIREMENT_VERSION) {
+            return $this->amount;
         }
 
         $this->amount = 0;
 
-        if (!empty($this->getCart()->getCart())) {
+        if (!empty($this->getCart())) {
             foreach ($this->getCart()->getCart() as $cartItem) {
                 $this->amount += round( ($cartItem['quantity'] * $cartItem['price'] ), 2 );
             }
         }
 
-        return number_format($this->amount, 2, '.', '');
+        return $this->amount;
     }
 
     public function getMethod(): string
@@ -536,5 +464,88 @@ class Purchase extends Base implements PaymentTypeInterface
     {
         $this->postResultAction = $postResultAction;
         return $this;
+    }
+
+    protected function _buildPostData(): void
+    {
+        $this->params = [];
+
+        $this->validate();
+
+        $this->_addPostParam( 'IPGmethod', $this->getMethod() );
+        $this->_addPostParam( 'Originator', $this->getConfig()->getMerchantId() );
+        $this->_addPostParam( 'KeyIndex', $this->getConfig()->getKeyIndex() );
+        $this->_addPostParam( 'KeyIndexResp', $this->getConfig()->getKeyIndexResp() );
+        $this->_addPostParam( 'IPGVersion', $this->getConfig()->getVersion() );
+        $this->_addPostParam( 'Language', $this->getConfig()->getLanguage() );
+        $this->_addPostParam( 'MID', Helper::formatMID( $this->getConfig()->getVirtualTerminalId() ) );
+        $this->_addPostParam( 'MIDName', $this->getConfig()->getMerchantName() );
+        if (!empty($this->getPaymentContext())) {
+            $this->_addPostParam( 'IPGPaymentContext', $this->getPaymentContext() );
+        }
+
+        if (!empty($this->getPostResultAction())) {
+            $this->_addPostParam( 'PostResultAction', $this->getPostResultAction() );
+        }
+
+        $this->_addPostParam( 'OrderID', $this->getOrderId() );
+        $this->_addPostParam( 'BannerIndex', $this->getBannerIndex() );
+        $this->_addPostParam( 'Currency', $this->getCurrency() );
+        $this->_addPostParam( 'CustomerIP', $this->customer->getIP() );
+        $this->_addPostParam( 'Email', $this->customer->getEmail() );
+        if ( !empty( $this->customer->getIdentifier() ) ) {
+            $this->_addPostParam( 'CustomerIdentifier', $this->customer->getIdentifier() );
+        }
+        if ( !empty( $this->customer->getMobileNumber() ) ) {
+            $this->_addPostParam( 'MobileNumber', $this->customer->getMobileNumber() );
+        }
+
+        if ( !empty( $this->getOrderLink() ) ) {
+            $this->_addPostParam( 'OrderLink', $this->getOrderLink() );
+        }
+        if ( !empty( $this->getNote() ) ) {
+            $this->_addPostParam( 'Note', $this->getNote() );
+        }
+
+        $this->_addPostParam( 'URL_OK', $this->getUrlOK() );
+        $this->_addPostParam( 'URL_Cancel', $this->getUrlCancel() );
+        $this->_addPostParam( 'URL_Notify', $this->getUrlNotify() );
+
+        if ( !empty( $this->billingAddress ) ) {
+            $this->_addPostParam( 'BillAddrCountry', $this->billingAddress->getBillAddrCountry() );
+            $this->_addPostParam( 'BillAddrPostCode', $this->billingAddress->getBillAddrPostCode() );
+            $this->_addPostParam( 'BillAddrCity', $this->billingAddress->getBillAddrCity() );
+            $this->_addPostParam( 'BillAddrLine1', $this->billingAddress->getBillAddrLine1() );
+
+            if ( !empty($this->billingAddress->getBillAddrState() ) ) {
+                $this->_addPostParam( 'BillAddrState', $this->billingAddress->getBillAddrState() );
+            }
+
+            if ( !empty($this->billingAddress->getBillAddrLine2() ) ) {
+                $this->_addPostParam( 'BillAddrLine2', $this->billingAddress->getBillAddrLine2() );
+            }
+
+            if ( !empty($this->billingAddress->getBillAddrLine3() ) ) {
+                $this->_addPostParam( 'BillAddrLine3', $this->billingAddress->getBillAddrLine3() );
+            }
+        }
+
+        if ($this->getConfig()->getVersion() <= Defines::CART_ITEMS_MAX_REQUIREMENT_VERSION) {
+            $this->_addPostParam( 'CartItems', $this->getCart()->getTotalItemsCount() );
+            $cartItemLoopIndex = 0;
+
+            foreach ( $this->getCart()->getCart() as $cartItem ) {
+                $cartItemLoopIndex += 1;
+                $this->_addPostParam( 'Article_' . $cartItemLoopIndex, $cartItem['name'] );
+                $this->_addPostParam( 'Quantity_' . $cartItemLoopIndex, $cartItem['quantity'] );
+                $this->_addPostParam( 'Price_' . $cartItemLoopIndex, Helper::formatAmount($cartItem['price']) );
+                $this->_addPostParam( 'Currency_' . $cartItemLoopIndex, $this->getCurrency() );
+                $totalPrice = round( ($cartItem['quantity'] * $cartItem['price'] ), 2 );
+                $this->_addPostParam( 'Amount_' . $cartItemLoopIndex, Helper::formatAmount($totalPrice) );
+            }
+        }
+        $this->_addPostParam( 'Amount', Helper::formatAmount( $this->getAmount() ) );
+
+        $this->_addPostParam('Signature', Crypto::generateSignature( $this->getConfig(), $this->params ));
     }
 }

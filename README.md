@@ -48,7 +48,7 @@ $config = new \IPG\Config();
 $config->setIPGUrl( 'https://dev-ipg.icards.eu/sandbox/' );
 $config->setKeyIndex( 1 );
 $config->setKeyIndexResp( 1 );
-$config->setLanguage( 'en' );
+$config->setLanguage( 'en' ); //Not required for methods Reversal, Refund and GetTxnStatus
 $config->setMerchantId( 33 ); //Originator
 $config->setMerchantName( 'IPG Example' );
 $config->setVersion( '4.5' );
@@ -97,14 +97,14 @@ $billingAddress->setBillAddrLine3( 'Line3' );
 $purchase = new IPG\Purchase( $config );
 $purchase->setBannerIndex(8);
 $purchase->setCart( $cart ); //required for a version <= 4.4
-$purchase->setCurrency( '978' );
+$purchase->setCurrency( 978 );
 $purchase->setAmount( 10.50 ); //required for a version >= 4.5
 $purchase->setCustomer( $customer );
 $purchase->setBillingAddress( $billingAddress );
 $purchase->setOrderId( time() );
-$purchase->setUrlOK( 'http://yoursite.com//urlOK' );
-$purchase->setUrlNotify( 'http://yoursite.com//urlNotify' );
-$purchase->setUrlCancel( 'http://yoursite.com//urlCancel' );
+$purchase->setUrlOK( 'http://yoursite.com/urlOK' );
+$purchase->setUrlNotify( 'http://yoursite.com/urlNotify' );
+$purchase->setUrlCancel( 'http://yoursite.com/urlCancel' );
 try {
 	$purchase->process();
 } catch ( \IPG\IPG_Exception $exc ) {
@@ -122,9 +122,9 @@ $purchase->setAmount( 10.50 );
 $purchase->setCustomer( $customer );
 $purchase->setBillingAddress( $billingAddress );
 $purchase->setOrderId( time() );
-$purchase->setUrlOK( 'http://yoursite.com//urlOK' );
-$purchase->setUrlNotify( 'http://yoursite.com//urlNotify' );
-$purchase->setUrlCancel( 'http://yoursite.com//urlCancel' );
+$purchase->setUrlOK( 'http://yoursite.com/urlOK' );
+$purchase->setUrlNotify( 'http://yoursite.com/urlNotify' );
+$purchase->setUrlCancel( 'http://yoursite.com/urlCancel' );
 $purchase->setCardToken('40B1B011C4A21E ... 36E452619059');
 $purchase->setIsVerifyCVC(true);
 try {

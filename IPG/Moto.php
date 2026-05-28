@@ -14,33 +14,7 @@ class Moto extends FirstRecurring
 	 */
 	public function process()
 	{
-		$this->validate();
-
-		$this->_addPostParam( 'IPGmethod', 'IPGMoto' );
-		$this->_addPostParam( 'Originator', $this->getConfig()->getMerchantId() );
-		$this->_addPostParam( 'KeyIndex', $this->getConfig()->getKeyIndex() );
-        $this->_addPostParam( 'KeyIndexResp', $this->getConfig()->getKeyIndexResp() );
-		$this->_addPostParam( 'IPGVersion', $this->getConfig()->getVersion() );
-		$this->_addPostParam( 'Language', $this->getConfig()->getLanguage() );
-		$this->_addPostParam( 'MID', $this->getConfig()->getVirtualTerminalId() );
-		$this->_addPostParam( 'MIDName', $this->getConfig()->getMerchantName() );
-
-		$this->_addPostParam( 'Amount', $this->getAmount() );
-		$this->_addPostParam( 'Currency', $this->getCurrency() );
-		$this->_addPostParam( 'CustomerIP', $this->getCustomer()->getIP() );
-		$this->_addPostParam( 'OrderID', $this->getOrderId() );
-		$this->_addPostParam( 'BannerIndex', $this->getBannerIndex() );
-		if ( !empty( $this->getOrderLink() ) ) {
-			$this->_addPostParam( 'OrderLink', $this->getOrderLink() );
-		}
-		if ( !empty( $this->getNote() ) ) {
-			$this->_addPostParam( 'Note', $this->getNote() );
-		}
-
-		$this->_addPostParam( 'URL_OK', $this->getUrlOK() );
-		$this->_addPostParam( 'URL_Cancel', $this->getUrlCancel() );
-		$this->_addPostParam( 'URL_Notify', $this->getUrlNotify() );
-
+        $this->_buildPostData();
 
 		$this->_processHtmlPost();
 
@@ -91,4 +65,38 @@ class Moto extends FirstRecurring
 		return true;
 	}
 
+    protected function _buildPostData(): void
+    {
+        $this->params = [];
+
+        $this->validate();
+
+        $this->_addPostParam( 'IPGmethod', 'IPGMoto' );
+        $this->_addPostParam( 'Originator', $this->getConfig()->getMerchantId() );
+        $this->_addPostParam( 'KeyIndex', $this->getConfig()->getKeyIndex() );
+        $this->_addPostParam( 'KeyIndexResp', $this->getConfig()->getKeyIndexResp() );
+        $this->_addPostParam( 'IPGVersion', $this->getConfig()->getVersion() );
+        $this->_addPostParam( 'Language', $this->getConfig()->getLanguage() );
+        $this->_addPostParam( 'MID', Helper::formatMID( $this->getConfig()->getVirtualTerminalId() ) );
+        $this->_addPostParam( 'MIDName', $this->getConfig()->getMerchantName() );
+
+        $this->_addPostParam( 'Amount', Helper::formatAmount( $this->getAmount() ) );
+        $this->_addPostParam( 'Currency', $this->getCurrency() );
+        $this->_addPostParam( 'CustomerIP', $this->getCustomer()->getIP() );
+        $this->_addPostParam( 'OrderID', $this->getOrderId() );
+        $this->_addPostParam( 'BannerIndex', $this->getBannerIndex() );
+
+        if ( !empty( $this->getOrderLink() ) ) {
+            $this->_addPostParam( 'OrderLink', $this->getOrderLink() );
+        }
+        if ( !empty( $this->getNote() ) ) {
+            $this->_addPostParam( 'Note', $this->getNote() );
+        }
+
+        $this->_addPostParam( 'URL_OK', $this->getUrlOK() );
+        $this->_addPostParam( 'URL_Cancel', $this->getUrlCancel() );
+        $this->_addPostParam( 'URL_Notify', $this->getUrlNotify() );
+
+        $this->_addPostParam('Signature', Crypto::generateSignature( $this->getConfig(), $this->params ));
+    }
 }

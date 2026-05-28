@@ -69,6 +69,18 @@ class Base
 	{
 		return $this->outputFormat;
 	}
+
+    /**
+     * Get POST params
+     *
+     * @return array
+     */
+    public function getPOSTParams(): array
+    {
+        $this->_buildPostData();
+
+        return $this->params;
+    }
 	
 	/**
 	 * Add params to post request
@@ -83,18 +95,17 @@ class Base
 	}
 
 	/**
-	 * Generate HTML form with POST params and auto-submit it
+	 * Generate an HTML form with POST params and auto-submit it
 	 */
 	protected function _processHtmlPost()
 	{
-		// Add request signature
-		$this->params['Signature'] = Crypto::generateSignature( $this->getConfig(), $this->params );
-		$c = '<body onload="document.ipgForm.submit();">';
-		$c .= '<form id="ipgForm" name="ipgForm" action="' . $this->getConfig()->getIPGUrl() . '" method="post">';
+		$c = '<body onload="document.ipgForm.submit();">' . PHP_EOL;
+        $c .= sprintf('<form id="ipgForm" name="ipgForm" action="%s" method="post">%s', $this->getConfig()->getIPGUrl(), PHP_EOL);
 		foreach ( $this->params as $k => $v ) {
-			$c .= "<input type=\"hidden\" name=\"" . $k . "\" value=\"" . $v . "\"  />\n";
+            $c .= sprintf('<input type="hidden" name="%s" value="%s"  />%s', $k, $v, PHP_EOL);
 		}
-		$c .= '</form></body>';
+		$c .= '</form>' . PHP_EOL;
+		$c .= '</body>' . PHP_EOL;
 		echo $c;
 		exit;
 	}
@@ -107,8 +118,6 @@ class Base
 	 */
 	protected function _processPost(): Response
 	{
-		$this->params['Signature'] = Crypto::generateSignature( $this->getConfig(), $this->params );
-
         $client = new Client();
         try {
             $response = $client->request(
@@ -127,5 +136,17 @@ class Base
             throw new IPG_Exception( 'Error sending request to iCard IPG. Error message: ' . $ex->getMessage() );
         }
 	}
+
+    /**
+     * Build POST data
+     *
+     * Use as a hook for child classes
+     *
+     * @return void
+     */
+    protected function _buildPostData(): void
+    {
+        $this->params = [];
+    }
 
 }

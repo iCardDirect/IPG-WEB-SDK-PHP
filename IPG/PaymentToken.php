@@ -23,7 +23,7 @@ class PaymentToken extends Base
     {
         $this->validate();
 
-        $this->setPostParams();
+        $this->_buildPostData();
 
         return $this->_processPost();
     }
@@ -33,8 +33,10 @@ class PaymentToken extends Base
         return 'IPGPaymentToken';
     }
 
-    protected function setPostParams(): void
+    protected function _buildPostData(): void
     {
+        $this->params = [];
+
         $this->_addPostParam( 'IPGmethod', $this->getMethod() );
         $this->_addPostParam( 'KeyIndex', $this->paymentType->getConfig()->getKeyIndex() );
         $this->_addPostParam( 'KeyIndexResp', $this->paymentType->getConfig()->getKeyIndexResp() );
@@ -52,10 +54,10 @@ class PaymentToken extends Base
             $this->_addPostParam( 'VerifyCVC', (int)$this->paymentType->isVerifyCVC() );
         }
 
-        $this->_addPostParam( 'MID', str_pad(intval($this->paymentType->getConfig()->getVirtualTerminalId()), 15, '0', STR_PAD_LEFT) );
+        $this->_addPostParam( 'MID', Helper::formatMID( $this->paymentType->getConfig()->getVirtualTerminalId() ) );
         $this->_addPostParam( 'MIDName', $this->paymentType->getConfig()->getMerchantName() );
         $this->_addPostParam( 'Currency', $this->paymentType->getCurrency() );
-        $this->_addPostParam( 'Amount', $this->paymentType->getAmount() );
+        $this->_addPostParam( 'Amount', Helper::formatAmount( $this->paymentType->getAmount() ) );
         $this->_addPostParam( 'OrderID', $this->paymentType->getOrderId() );
         if (!empty($this->paymentType->getNote())) {
             $this->_addPostParam( 'Note', $this->paymentType->getNote() );
@@ -97,12 +99,14 @@ class PaymentToken extends Base
                 $cartItemLoopIndex += 1;
                 $this->_addPostParam( 'Article_' . $cartItemLoopIndex, $cartItem['name'] );
                 $this->_addPostParam( 'Quantity_' . $cartItemLoopIndex, $cartItem['quantity'] );
-                $this->_addPostParam( 'Price_' . $cartItemLoopIndex, $cartItem['price'] );
+                $this->_addPostParam( 'Price_' . $cartItemLoopIndex, Helper::formatAmount($cartItem['price']) );
                 $this->_addPostParam( 'Currency_' . $cartItemLoopIndex, $this->paymentType->getCurrency() );
                 $totalPrice = round( ($cartItem['quantity'] * $cartItem['price'] ), 2 );
-                $this->_addPostParam( 'Amount_' . $cartItemLoopIndex, $totalPrice );
+                $this->_addPostParam( 'Amount_' . $cartItemLoopIndex, Helper::formatAmount($totalPrice) );
             }
         }
+
+        $this->_addPostParam('Signature', Crypto::generateSignature( $this->getConfig(), $this->params ));
     }
 
     /**
@@ -142,7 +146,7 @@ class PaymentToken extends Base
             throw new IPG_Exception( 'Invalid Config details: ' . $ex->getMessage() );
         }
 
-        if ($this->paymentType->getConfig()->getVersion() < 4.5 && $this->paymentType->getMethod() == 'IPGPurchase') {
+        if ($this->paymentType->getConfig()->getVersion() <= Defines::CART_ITEMS_MAX_REQUIREMENT_VERSION && $this->paymentType->getMethod() == 'IPGPurchase') {
             try {
                 $this->paymentType->getCart()->validate();
             }

@@ -46,19 +46,8 @@ class Reversal extends Base
 	 */
 	public function process()
 	{
-		$this->validate();
+		$this->_buildPostData();
 
-		$this->_addPostParam( 'IPGmethod', 'IPGReversal' );
-		$this->_addPostParam( 'Originator', $this->getConfig()->getMerchantId() );
-		$this->_addPostParam( 'KeyIndex', $this->getConfig()->getKeyIndex() );
-        $this->_addPostParam( 'KeyIndexResp', $this->getConfig()->getKeyIndexResp() );
-		$this->_addPostParam( 'IPGVersion', $this->getConfig()->getVersion() );
-        $this->_addPostParam( 'MID', $this->getConfig()->getVirtualTerminalId() );
-
-        $this->_addPostParam( 'OrderID', $this->getOrderId() );
-        $this->_addPostParam( 'IPG_Trnref', $this->getTrnRef() );
-		$this->_addPostParam( 'OutputFormat', $this->getOutputFormat() );
-		
 		return $this->_processPost();
 	}
 
@@ -75,7 +64,7 @@ class Reversal extends Base
 		}
 
 		try {
-			$this->getConfig()->validate(false);
+			$this->getConfig()->validate($this->getConfig()->getVersion() >= 4.5);
 		}
 		catch ( \Exception $ex ) {
 			throw new IPG_Exception( 'Invalid Config details: ' . $ex->getMessage() );
@@ -93,5 +82,28 @@ class Reversal extends Base
     {
         $this->orderId = $orderId;
         return $this;
+    }
+
+    protected function _buildPostData(): void
+    {
+        $this->params = [];
+
+        $this->validate();
+
+        $this->_addPostParam( 'IPGmethod', 'IPGReversal' );
+        $this->_addPostParam( 'Originator', $this->getConfig()->getMerchantId() );
+        $this->_addPostParam( 'KeyIndex', $this->getConfig()->getKeyIndex() );
+        $this->_addPostParam( 'KeyIndexResp', $this->getConfig()->getKeyIndexResp() );
+        $this->_addPostParam( 'IPGVersion', $this->getConfig()->getVersion() );
+
+        if ( !empty( $this->getConfig()->getVirtualTerminalId() ) ) {
+            $this->_addPostParam( 'MID', Helper::formatMID( $this->getConfig()->getVirtualTerminalId() ) );
+        }
+
+        $this->_addPostParam( 'OrderID', $this->getOrderId() );
+        $this->_addPostParam( 'IPG_Trnref', $this->getTrnRef() );
+        $this->_addPostParam( 'OutputFormat', $this->getOutputFormat() );
+
+        $this->_addPostParam('Signature', Crypto::generateSignature( $this->getConfig(), $this->params ));
     }
 }
